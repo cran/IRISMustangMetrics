@@ -1,0 +1,68 @@
+############################################################
+# Import required packages
+############################################################
+
+import(methods)     # for methods used in defining S4 classes
+import(IRISSeismic) #
+
+############################################################
+# Export S4 classes 
+############################################################
+  
+# NOTE:  If we weren't exporting classes and methods explicitly
+# NOTE:  we would use an exportPattern like this:
+#
+# exportPattern("^[a-zA-Z]") # all objects that begin with a letter
+
+exportClasses(
+  "MultipleTimeValueMetric",
+  "MultipleValueMetric",
+  "SingleValueMetric",
+  "SpectrumMetric"
+)
+
+############################################################
+# Export class methods 
+############################################################
+
+# additional method for IrisClient
+exportMethods(
+  "createBssUrl",
+  "getBssMetricList",
+  "getLatencyValuesXml",
+  "getMetricsXml",
+  "getPsdMetrics",
+  "getSingleValueMetrics"
+)
+
+############################################################
+# Register generic S3 methods with new S4 classes
+############################################################
+
+
+############################################################
+# Export functions that are not class methods
+############################################################
+
+# from Class-Metric
+export("metricList2DFList")
+export("metricList2Xml")
+export("spectrumMetric2Xml")
+export("timesMetric2Xml")
+# from BSSUtils
+export("saveMetricList")
+export("convertBssErrors")
+# from metrics
+export("basicStatsMetric")
+export("crossCorrelationMetrics")
+export("correlationMetric")
+export("dailyDCOffsetMetric")
+export("DCOffsetTimesMetric")
+export("gapsMetric")
+export("PSDMetrics")
+export("SNRMetric")
+export("spikesMetric")
+export("STALTAMetric")
+export("stateOfHealthMetric")
+export("transferFunctionMetrics")
+export("upDownTimesMetric")
