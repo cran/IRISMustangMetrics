@@ -47,11 +47,9 @@ correlationMetric <- function(st1, st2) {
   # Sanity check lengths
   l1 <- length(tr1)
   l2 <- length(tr2)
-  if ( abs(l1 - l2) > 1/tr1@stats@sampling_rate )  {
-    # Only complain if the difference is more than one point
-    if (abs(l1 - l2) > 1) {
-      stop(paste("correlationMetric: Incompatible lengths tr1 =",l1,", tr2 =",l2))      
-    }
+  # Only complain if if sample lengths differ AND the difference is greater than the inverse sampling rate
+  if ( (abs(l1 - l2) > 1) && (abs(l1 - l2) > 1/tr1@stats@sampling_rate) )  {
+    stop(paste("correlationMetric: Incompatible lengths tr1 =",l1,", tr2 =",l2))      
   } else {
     min_length <- min(l1,l2)
   }
