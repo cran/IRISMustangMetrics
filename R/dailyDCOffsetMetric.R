@@ -24,24 +24,28 @@
 ################################################################################
 # REC - Jan 2014 - making modifications around the roll_sd call in order to address
 # seg faults that are stopping production.
-# REC - Nov 2014 - modifying code so that it only computes one value, representing the Nth day.
-# TODO - refactor code so that it only operates on a single metric and doesn't calculate unnecessarily
-# 		for an entire array
 #
-dailyDCOffsetMetric <- function(df, offsetDays=5,
+dailyDCOffsetMetric <- function(df, 
+                                offsetDays=5,
                                 outlierWindow=7,
-                                outlierThreshold=6.0,
-                                outlierSelectivity=0.1) {
+                                outlierThreshold=3.0,
+                                outputType=1) {               # outputType is a flag (0,1) that determines whether the function returns values for one day or multiple days
+                                                          # default outputType=1 returns one day, outputType=0 returns multiple days
   
+
   # Sanity checks
   if (class(df) != "data.frame") {
     stop(paste("dailyDCOffsetMetric: Argument 'df' is of class",class(df),". A dataframe is required."))
   }
   if (nrow(df) < 1) {
-    stop(paste("dailyDCOffsetMetric: No data found in dataframe."))
+    stop("dailyDCOffsetMetric: No data found in dataframe.")
   }
-  if (!("sample_mean" %in% names(df))) {
-    stop(paste("dailyDCOffsetMetric: Dataframe does not contain variable 'sample_mean'."))    
+  if (all(!c("sample_mean","starttime","endtime") %in% names(df))) {
+    stop("dailyDCOffsetMetric: Dataframe does not contain one or more of variables 'sample_mean', 'starttime','endtime'.")    
+  }
+  
+  if ( !(outputType %in% c(0,1))  ) {
+    stop(paste("dailyDCOffsetMetric: variable 'outputType'=", outputType, "is invalid, must be 1 or 0"))
   }
   
   # Metric algorithm:
@@ -55,9 +59,10 @@ dailyDCOffsetMetric <- function(df, offsetDays=5,
   #   METRIC = divide metric0 by the median value of stddev0
 
   # Replace outliers with rolling median values
-  outliers <- seismicRoll::findOutliers(df$sample_mean,outlierWindow,outlierThreshold,outlierSelectivity,1)
+  outliers <- seismicRoll::findOutliers(df$sample_mean,n=outlierWindow,thresholdMin=outlierThreshold)
   cleanMean <- df$sample_mean
-  cleanMean[outliers] <- seismicRoll::roll_median(df$sample_mean,7)[outliers]
+  cleanMean[outliers] <- seismicRoll::roll_median(df$sample_mean,n=7)[outliers]
+  cleanMean <- cleanMean[1:(length(cleanMean)-floor(outlierWindow/2))]        #last floor(outlierWindow/2) number of values are not checked for outlier status by the findOutlier algorithm, do not use further
   
   # Vanilla metric
   metric <- rep(1.0,length(cleanMean))
@@ -65,32 +70,47 @@ dailyDCOffsetMetric <- function(df, offsetDays=5,
   # Have a minimum value to prevent occasional zeros associated with different lags from completely wiping out large values
   diffMin <- rep(1e-3,length(cleanMean))
 
-  # Create vectors of daily differences with N increasing lags, multiplying them together and then taking the N'th root
+  # Create vectors of daily differences with N=offsetDays increasing lags, multiplying them together and then taking the N'th root
   for (i in seq(offsetDays)) {
     # Create a daily metric from the lagged data with NA's at the beginning.  Each date has the difference
     # between that date and the value 'i' days earlier.
     dailyDiff <- c(rep(NA,i),abs(diff(cleanMean,lag=i))) 
-    # Multiplying them together weights those shifts that last for N days.
+
+    # Multiplying them together weights those shifts over the previous N days. 
     metric <- metric * pmax(diffMin, dailyDiff) 
   }
   metric <- metric^(1/offsetDays)
-  
+
   # Scale the metric by the median of the rolling sd with a window size of offsetDays
-  #cat("DEBUG: seismicRoll::roll_sd cleanMean=", cleanMean, ", offsetDays=", offsetDays,"\n")
-  #
   scaling <- stats::quantile(seismicRoll::roll_sd(cleanMean,offsetDays),0.5,na.rm=TRUE)
   metric <- metric / scaling
-  
-  # We have a vector of metric values and now convert these into a list of SingleValueMetric objects
-  # REC -- we will bypass any looping and just take the last element
-  metricList <- list()  # (kludge) this metricList will just have one element with the current implementation
-  index <- length(metric) # index is fixed to the last element
-  if (is.na(metric[index])) {
-	  stop("dailyDCOffsetMetric: NA value found for dc_offset -- stop") 
+
+  # We have a vector of metric values and now convert these into a list of GeneralValueMetric objects
+  metricList <- list() 
+
+  if (outputType==1) {               # either take the last value in the metric vector or entire metric vector, depending on outputType flag
+      j <- length(metric)
+      if (is.na(metric[j])) {
+           next
+      } else {
+           metricList[[1]] <- list( new("GeneralValueMetric",
+                                 snclq=df[j,"snclq"], starttime=df[j,"starttime"], endtime=df[j,"endtime"],
+                                 metricName="dc_offset", elementNames=c("value"), elementValues=metric[j])   )
+      }
   } else {
-      metricList <- list ( new("SingleValueMetric",
-                                 snclq=df[index,"snclq"], starttime=df[index,"starttime"], endtime=df[index,"endtime"],
-                                 metricName="dc_offset", value=metric[index])   )
+      index <- 1
+      for (j in seq(length(metric))) {
+          if (is.na(metric[j])) {
+              next
+          } else {
+              metricList[[index]] <- list( new("GeneralValueMetric",
+                                 snclq=df[j,"snclq"], starttime=df[j,"starttime"], endtime=df[j,"endtime"],
+                                 metricName="dc_offset", elementNames=c("value"), elementValues=metric[j])   )
+          }
+          index <- index+1
+      }
   }
+  
   return(metricList)
 }
+

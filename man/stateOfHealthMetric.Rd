@@ -58,7 +58,7 @@ A list of \code{SingleValueMetric} objects is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -68,17 +68,19 @@ Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Generate State of Health metrics and show the results
 metricList <- stateOfHealthMetric(st)
 dummy <- lapply(metricList, show)
+  }
 }
 
 \keyword{metrics}

@@ -1,5 +1,3 @@
-##    S4 classes for handling metrics derived from seismic traces.
-##
 ##    Copyright (C) 2012  Mazama Science, Inc.
 ##    by Jonathan Callahan, jonathan@mazamascience.com
 ##
@@ -142,7 +140,8 @@ setMethod("initialize", "SingleValueMetric",
                                 "missing_padded_data",
                                 "telemetry_sync_error",
                                 "digital_filter_charging",
-                                "suspect_time_tag")
+                                "suspect_time_tag",
+                                "dead_channel_gsn")
             
             # Set the valueString
             if (metricName == "example") {
@@ -188,30 +187,31 @@ setMethod("show", signature(object="SingleValueMetric"), function(object) show.S
 
 
 ################################################################################
-# Class MultipleValueMetric
+# Class GeneralValueMetric
 #
-# The MultipleValueMetric object contains metadata associated with a list of values.
+# The GeneralValueMetric object contains metadata associated with a list of values.
 #
 #   snclq         -- station.network.channel.location.quality identifier
 #   starttime     -- starttime for the trace used in this metric
 #   endtime       -- endtime for the trace used in this metric
 #   metricName    -- name of this metric
-#   elementName   -- name of the XML element containing the parameter value stored in the BSS
-#   values        -- vector of values associated with this metric
-#   valueStrings -- vector of string representations of the values associated with this metric
+#   elementNames   -- vector of names of the XML element containing the parameter value stored in the BSS
+#   elementValues        -- vector of values associated with this metric
+#   valueStrings  -- vector of string representations of the values associated with this metric
 #   quality_flag  -- numeric flag identifying issues in the quality of the calculated metric
 #   quality_flagString -- string representation of quality_flag
 #
 ################################################################################
 
-setClass("MultipleValueMetric", 
+setClassUnion("numORchar",c("numeric","character"))
+setClass("GeneralValueMetric", 
          # typed slots (aka attributes) for class Trace
          representation(snclq = "character",
                         starttime = "POSIXct",
                         endtime = "POSIXct",
                         metricName = "character",
-                        elementName = "character",
-                        values = "numeric",
+                        elementNames = "character",
+                        elementValues = "numORchar",
                         valueStrings = "character",
                         quality_flag = "numeric",
                         quality_flagString = "character"),
@@ -220,31 +220,32 @@ setClass("MultipleValueMetric",
                    starttime = as.POSIXct("1900-01-01T00:00:00",format="%Y-%m-%dT%H:%M:%OS", tz="GMT"),
                    endtime = as.POSIXct("1900-01-01T00:00:00",format="%Y-%m-%dT%H:%M:%OS", tz="GMT"),
                    metricName = "",
-                   elementName = "x",
+                   elementNames = "x",
+                   elementValues = NULL,
                    valueStrings = "c()",
                    quality_flag = -9,
                    quality_flagString = "-9")
 )
 
 # initialze method
-setMethod("initialize", "MultipleValueMetric",
-          function(.Object, snclq, starttime, endtime, metricName, values, quality_flag, ...) {
+setMethod("initialize", "GeneralValueMetric",
+          function(.Object, snclq, starttime, endtime, metricName, elementNames, elementValues, valueStrings, quality_flag, ...) {
             
             .Object@snclq <- snclq
             .Object@starttime <- starttime
             .Object@endtime <- endtime
             .Object@metricName <- metricName
-            .Object@values <- values
+            .Object@elementNames <- elementNames
+            .Object@elementValues <- elementValues
             
-            # metrics whose values are integer
-            integerMetrics <- c()
-                                
-            # Set the valueString
-            if (metricName %in% integerMetrics) {
-              .Object@valueStrings <- sprintf("%d",values)
+            if(!missing(valueStrings)) {
+              .Object@valueStrings <- valueStrings
             } else {
-              # default formatting 
-              .Object@valueStrings <- sprintf("%.3f",values)
+               if(class(elementValues)=="character"){
+                   .Object@valueStrings <- stringr::str_trim(format(elementValues))
+               } else {
+                   .Object@valueStrings <- format(elementValues, digits=7)
+               }
             }
             
             # Convert missing value from R style to BSS style
@@ -264,16 +265,24 @@ setMethod("initialize", "MultipleValueMetric",
 
 # show method is called by show() and print() ----------------------------------
 
-show.MultipleValueMetric <- function(object) {
-  cat ("MultipleValueMetric \n")
+show.GeneralValueMetric <- function(object) {
+  cat ("GeneralValueMetric \n")
   cat ("  metric:        " , object@metricName, "\n")
   cat ("  snclq:         " , object@snclq, "\n")
   cat ("  starttime:     " , format(object@starttime), "\n")
   cat ("  endtime:       " , format(object@endtime), "\n")
-  cat ("  values:        " , object@valueStrings, "\n")
+  for (i in seq(length(object@elementNames))) {
+    name <- object@elementNames[i]
+    valString <- object@valueStrings[i]
+    n <- 15 - stringr::str_length(name)
+    n <- ifelse (n > 0, n, 2)
+    if (name != "") {
+      cat ("  ",name,":", rep(" ",n), valString, "\n", sep="")      
+    }
+  } 
 }
 # NOTE:  method signature must match generic signature for 'show' with argument: 'object'
-setMethod("show", signature(object="MultipleValueMetric"), function(object) show.MultipleValueMetric(object))
+setMethod("show", signature(object="GeneralValueMetric"), function(object) show.GeneralValueMetric(object))
 
 
 ################################################################################
@@ -444,7 +453,7 @@ setMethod("initialize", "MultipleTimeValueMetric",
             }
             
             # Convert values to strings
-            .Object@valueStrings <- format(values, format="%Y-%m-%dT%H:%M:%0S", tz="GMT")
+            .Object@valueStrings <- format(values, format="%Y-%m-%dT%H:%M:%OS", tz="GMT")
             
             # Set the quality_flagString using BSS style missing value
             .Object@quality_flagString <- as.character(.Object@quality_flag)
@@ -468,12 +477,111 @@ setMethod("show", signature(object="MultipleTimeValueMetric"), function(object) 
 
 
 ################################################################################
+# Function to convert a list of SingleValueMetric objects into a single, tidy
+# dataframe with columns: "metricName, value, snclq, starttime, endtime, qualityFlag".
+# These match the output from getSingleValueMetrics().
+################################################################################
+
+metricList2DF <- function(metricList) {
+  input <- class(metricList[[1]])
+  if (input=="SingleValueMetric") { 
+      # Extract attributes from the list of Metrics
+      # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
+      snclq <- sapply(metricList, slot, 'snclq')
+      starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
+      endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
+      metricName <- sapply(metricList, slot, 'metricName')
+      value <- sapply(metricList, slot, 'value')
+      qualityFlag <- sapply(metricList, slot, 'quality_flag')
+      
+      # NOTE:  attributeName and attributeValueString can be vectors and are therefore
+      # NOTE:  returned as a list of character vectors.
+      attributeNameList <- lapply(metricList, slot, 'attributeName')
+      attributeValueStringList <- lapply(metricList, slot, 'attributeValueString')
+      
+      # Create a dataframe from the vectors created above
+      df <- as.data.frame(list(metricName,value,snclq,starttime,endtime,qualityFlag),
+			  stringsAsFactors=FALSE)
+      names(df) <- c("metricName","value","snclq","starttime","endtime","qualityFlag")
+      
+      # Now add attributes 
+      # NOTE:  As we are creating a dataframe, every column must be represented in every row.
+      # NOTE:  If singleValueMetrics have different attributes, we will need to include all
+      # NOTE:  of them as columns and then insert NA's into those rows where they are not found.
+      attNames <- unique(unlist(attributeNameList))
+      for (name in attNames) {
+	if (name != "") {
+	  df[[name]] <- rep("",length(snclq))
+	}
+      }
+      
+      # Now fill in attribute values where thay are defined
+      for (i in seq(length(metricList))) {
+	names <- metricList[[i]]@attributeName
+	valStrings <- metricList[[i]]@attributeValueString
+	for (j in seq(length(names))) {
+	  name <- names[j]
+	  valString <- valStrings[j]
+	  if (name != "") {
+	    df[[name]][i] <- valString
+	  }
+	}
+      }
+      
+      # Convert columns to appropriate type
+      df$qualityFlag <- as.numeric(df$qualityFlag)
+      df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
+      df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
+      
+  } else if (input=="GeneralValueMetric") {
+      snclq <- sapply(metricList, slot, 'snclq')
+      starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
+      endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
+      metricName <- sapply(metricList, slot, 'metricName')
+      elementNamesList <- lapply(metricList, slot, 'elementNames')
+      qualityFlag <- sapply(metricList, slot, 'quality_flag')
+ 
+      df <- as.data.frame(list(metricName,snclq,starttime,endtime,qualityFlag), stringsAsFactors=FALSE)
+      names(df) <- c("metricName","snclq","starttime","endtime","qualityFlag")
+
+      elementNames <- unique(unlist(elementNamesList))
+      for (name in elementNames) {
+        if (name != "") {
+          df[[name]] <- as.numeric(rep("",length(snclq)))
+        }
+      }
+      for (i in seq(length(metricList))) {
+        elementNames <- metricList[[i]]@elementNames
+        valueStrings <- metricList[[i]]@valueStrings
+        for (j in seq(length(elementNames))) {
+          name <- elementNames[j]
+          value <- valueStrings[j]
+          if (name != "") {
+            df[[name]][i] <- value
+          }
+        }
+      }
+      # Convert columns to appropriate type
+      df$qualityFlag <- as.numeric(df$qualityFlag)
+      df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
+      df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
+
+  }
+
+return(df)
+}
+
+
+################################################################################
 # Function to convert a list of SingleValueMetric objects into a list of
 # dataframes, one per metricName.
 ################################################################################
 
+
 metricList2DFList <- function(metricList) {
   
+  .Deprecated("metricList2DF")
+
   # Extract attributes from the list of Metrics
   # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
   snclq <- sapply(metricList, slot, 'snclq')
@@ -516,9 +624,7 @@ metricList2DFList <- function(metricList) {
     }
   }
     
-   
   # At this point, all columns are of type "character"
-  
   
   dfList <- list()
   
@@ -556,154 +662,259 @@ metricList2DFList <- function(metricList) {
 ################################################################################
 
 metricList2Xml <- function(metricList) {
+  input <- class(metricList[[1]])
+  if (input=="SingleValueMetric") {
 
-  returnString <- "<measurements>"
-  
-  # Extract attributes from the list of Metrics
-  # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
-  snclq <- sapply(metricList, slot, 'snclq')
-  starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
-  endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
-  metricName <- sapply(metricList, slot, 'metricName')
-  valueName <- sapply(metricList, slot, 'valueName')
-  valueString <- sapply(metricList, slot, 'valueString')
-  quality_flagString <- sapply(metricList, slot, 'quality_flagString')
-  
-  # NOTE:  attributeName and attributeValueString can be vectors and are therefore
-  # NOTE:  returned as a list of character vectors.
-  attributeNameList <- lapply(metricList, slot, 'attributeName')
-  attributeValueStringList <- lapply(metricList, slot, 'attributeValueString')
-  
-  # Create a dataframe from the vectors created above
-  df <- as.data.frame(cbind(snclq,starttime,endtime,metricName,valueName,valueString,quality_flagString),
-                      stringsAsFactors=FALSE)
-  
-  # Convert columns to appropriate type
-  df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
-  df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
-  
-  # Now add attributes 
-  # NOTE:  As we are creating a dataframe, every column must be represented in every row.
-  # NOTE:  If singleValueMetrics have different attributes, we will need to include all
-  # NOTE:  of them as columns and then insert NA's into those rows where they are not found.
-  attNames <- unique(unlist(attributeNameList))
-  for (name in attNames) {
-    if (name != "") {
-      df[[name]] <- rep("",length(snclq))
-    }
-  }
-  
-  # Now fill in attribute values where thay are defined
-  for (i in seq(length(metricList))) {
-    names <- metricList[[i]]@attributeName
-    valStrings <- metricList[[i]]@attributeValueString
-    for (j in seq(length(names))) {
-      name <- names[j]
-      valString <- valStrings[j]
-      if (name != "") {
-        df[[name]][i] <- valString
+      returnString <- "<measurements>"
+      
+      # Extract attributes from the list of Metrics
+      # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
+      snclq <- sapply(metricList, slot, 'snclq')
+      starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
+      endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
+      metricName <- sapply(metricList, slot, 'metricName')
+      valueName <- sapply(metricList, slot, 'valueName')
+      valueString <- sapply(metricList, slot, 'valueString')
+      quality_flagString <- sapply(metricList, slot, 'quality_flagString')
+      
+      # NOTE:  attributeName and attributeValueString can be vectors and are therefore
+      # NOTE:  returned as a list of character vectors.
+      attributeNameList <- lapply(metricList, slot, 'attributeName')
+      attributeValueStringList <- lapply(metricList, slot, 'attributeValueString')
+      
+      # Create a dataframe from the vectors created above
+      df <- as.data.frame(list(snclq,starttime,endtime,metricName,valueName,valueString,quality_flagString),
+			  stringsAsFactors=FALSE)
+      names(df) <- c("snclq","starttime","endtime","metricName","valueName","valueString","quality_flagString")
+      
+      # Convert columns to appropriate type
+      df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
+      df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
+      
+      # Now add attributes 
+      # NOTE:  As we are creating a dataframe, every column must be represented in every row.
+      # NOTE:  If singleValueMetrics have different attributes, we will need to include all
+      # NOTE:  of them as columns and then insert NA's into those rows where they are not found.
+      attNames <- unique(unlist(attributeNameList))
+      for (name in attNames) {
+	if (name != "") {
+	  df[[name]] <- rep("",length(snclq))
+	}
       }
-    }
-  }  
-  
-  # Add a dateRange string so that we can find all unique date ranges
-  df$dateRange <- paste(df$starttime,df$endtime)
-  
-  # Organize the metrics by dateRange as in the XML example above
-  dateRanges <- sort(unique(df$dateRange))  
-  
-  for (dateRange in dateRanges) {
-    
-    # Create a subset of the dataframe that only includes the current dateRange
-    dateSubset <- df[df$dateRange == dateRange,]
-    
-    # Create the string for this dateRange
-    # NOTE:  This subset may have multiple rows so we only use dates from the first row
-	# REC -- correct date formatting to ISO
-    #startString <- as.character(dateSubset$starttime[1])
-	startString <- format(dateSubset$starttime[1],"%Y-%m-%dT%H:%M:%OS")
-    #endString <- as.character(dateSubset$endtime[1])
-	endString <- format(dateSubset$endtime[1],"%Y-%m-%dT%H:%M:%OS")
-    dateString <- paste("<date start='",startString,"' end='",endString,"'>",sep="")
-    returnString <- paste(returnString,dateString,sep="")
-    
-    # Organize this subset by snclq
-    snclqs <- sort(unique(dateSubset$snclq))
-    for (id in snclqs) {
       
-      target <- subset(dateSubset, snclq == id)
+      # Now fill in attribute values where thay are defined
+      for (i in seq(length(metricList))) {
+	names <- metricList[[i]]@attributeName
+	valStrings <- metricList[[i]]@attributeValueString
+	for (j in seq(length(names))) {
+	  name <- names[j]
+	  valString <- valStrings[j]
+	  if (name != "") {
+	    df[[name]][i] <- valString
+	  }
+	}
+      }  
       
-      # Create the string for this snclq
-      targetString <- paste("<target snclq='",id,"'>",sep="")
-      returnString <- paste(returnString,targetString,sep="")
+      # Add a dateRange string so that we can find all unique date ranges
+      df$dateRange <- paste(df$starttime,df$endtime)
       
-      for (i in seq(nrow(target))) {
-        
-        # Create the valueString
-        valueString <- paste(target$valueName[i],"='",target$valueString[i],"'",sep="")
-        
-        # Create attributerStrings as needed
-        attributeString <- ''
-        for (name in attNames) {
-          if (name != "") {
-            valString <- target[[name]][i]
-            if (valString != "") {
-              attributeString <- paste(attributeString," ",name,"='",valString,"'",sep="")
-            }            
-          }
-        }
-        
-        # Create quality_flagString if needed
-        if (target$quality_flagString[i] == -9) {
-          qualityString <- ''
-        } else {
-          qualityString <- paste("quality_flag='",target$quality_flagString[i],"'",sep="")
-        }
-        
-        # Create the metricString
-        metricString <- paste("<",target$metricName[i]," ",
-                              valueString," ",
-                              qualityString," ",
-                              attributeString," ",
-                              "/>",sep="")
+      # Organize the metrics by dateRange as in the XML example above
+      dateRanges <- sort(unique(df$dateRange))  
+      
+      for (dateRange in dateRanges) {
+	
+	# Create a subset of the dataframe that only includes the current dateRange
+	dateSubset <- df[df$dateRange == dateRange,]
+	
+	# Create the string for this dateRange
+	# NOTE:  This subset may have multiple rows so we only use dates from the first row
+	    # REC -- correct date formatting to ISO
+	#startString <- as.character(dateSubset$starttime[1])
+	    startString <- format(dateSubset$starttime[1],"%Y-%m-%dT%H:%M:%OS")
+	#endString <- as.character(dateSubset$endtime[1])
+	    endString <- format(dateSubset$endtime[1],"%Y-%m-%dT%H:%M:%OS")
+	dateString <- paste("<date start='",startString,"' end='",endString,"'>",sep="")
+	returnString <- paste(returnString,dateString,sep="")
+	
+	# Organize this subset by snclq
+	snclqs <- sort(unique(dateSubset$snclq))
+	for (id in snclqs) {
+	  
+	  target <- subset(dateSubset, snclq == id)
+	  
+	  # Create the string for this snclq
+	  targetString <- paste("<target snclq='",id,"'>",sep="")
+	  returnString <- paste(returnString,targetString,sep="")
+	  
+	  for (i in seq(nrow(target))) {
+	    
+	    # Create the valueString
+	    valueString <- paste(target$valueName[i],"='",target$valueString[i],"'",sep="")
+	    
+	    # Create attributerStrings as needed
+	    attributeString <- ''
+	    for (name in attNames) {
+	      if (name != "") {
+		valString <- target[[name]][i]
+		if (valString != "") {
+		  attributeString <- paste(attributeString," ",name,"='",valString,"'",sep="")
+		}            
+	      }
+	    }
+	    
+	    # Create quality_flagString if needed
+	    if (target$quality_flagString[i] == -9) {
+	      qualityString <- ''
+	    } else {
+	      qualityString <- paste("quality_flag='",target$quality_flagString[i],"'",sep="")
+	    }
+	    
+	    # Create the metricString
+	    metricString <- paste("<",target$metricName[i]," ",
+				  valueString," ",
+				  qualityString," ",
+				  attributeString," ",
+				  "/>",sep="")
 
-#         if (target$quality_flagString[i] == "-9") {
-#           # If the quality_flag was not assigned during creation of the metric, don't include it in the XML
-#           metricString <- paste("<",target$metricName[i]," ",
-#                                 target$valueName[i],"='",target$valueString[i],"'",
-#                                 attributeString,
-#                                 "/>", sep="")
-#           
-#         } else {
-#           # If the quality_flag was assigned, add it to the XML
-#           metricString <- paste("<",target$metricName[i]," ",
-#                                 target$valueName[i],"='",target$valueString[i],"' ",
-#                                 "quality_flag='",target$quality_flagString[i],"'",
-#                                 attributeString,
-#                                 "/>" ,sep="")
-#         }
-        
-        returnString <- paste(returnString,metricString,sep="")
-        
-      } # end of "target" loop for each metric
+    #         if (target$quality_flagString[i] == "-9") {
+    #           # If the quality_flag was not assigned during creation of the metric, don't include it in the XML
+    #           metricString <- paste("<",target$metricName[i]," ",
+    #                                 target$valueName[i],"='",target$valueString[i],"'",
+    #                                 attributeString,
+    #                                 "/>", sep="")
+    #           
+    #         } else {
+    #           # If the quality_flag was assigned, add it to the XML
+    #           metricString <- paste("<",target$metricName[i]," ",
+    #                                 target$valueName[i],"='",target$valueString[i],"' ",
+    #                                 "quality_flag='",target$quality_flagString[i],"'",
+    #                                 attributeString,
+    #                                 "/>" ,sep="")
+    #         }
+	    
+	    returnString <- paste(returnString,metricString,sep="")
+	    
+	  } # end of "target" loop for each metric
+	  
+	  returnString <- paste(returnString,"</target>",sep="")      
+	} # end of "snclq" loop
+	
+	returnString <- paste(returnString,"</date>",sep="")
+      } # end of "date" loop
       
-      returnString <- paste(returnString,"</target>",sep="")      
-    } # end of "snclq" loop
-    
-    returnString <- paste(returnString,"</date>",sep="")
-  } # end of "date" loop
-  
-  returnString <- paste(returnString,"</measurements>",sep="")
-  
-  return(returnString)
+      returnString <- paste(returnString,"</measurements>",sep="")
+      return(returnString)
+
+  } else if (input=="GeneralValueMetric") {
+      returnString <- "<measurements>"
+
+      # Extract attributes from the list of Metrics
+      # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
+      snclq <- sapply(metricList, slot, 'snclq')
+      starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
+      endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
+      metricName <- sapply(metricList, slot, 'metricName')
+      elementNameList <- lapply(metricList, slot, 'elementNames')
+      valueStringList <- lapply(metricList, slot, 'valueStrings')
+      quality_flagString <- sapply(metricList, slot, 'quality_flagString')
+
+      df <- as.data.frame(list(snclq,starttime,endtime,metricName,quality_flagString),
+			  stringsAsFactors=FALSE)
+      names(df) <- c("snclq","starttime","endtime","metricName","quality_flagString")
+      df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
+      df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
+
+      elementUnique <- unique(unlist(elementNameList))
+      for (name in elementUnique) {
+	if (name != "") {
+	  df[[name]] <- rep("",length(snclq))
+	}
+      }
+      
+      for (i in seq(length(metricList))) {
+	names <- metricList[[i]]@elementNames
+	valStrings <- metricList[[i]]@valueStrings
+	for (j in seq(length(names))) {
+	  name <- names[j]
+	  valString <- valStrings[j]
+	  if (name != "") {
+	    df[[name]][i] <- valString
+	  }
+	}
+      }  
+
+      df$dateRange <- paste(df$starttime,df$endtime)
+      dateRanges <- sort(unique(df$dateRange)) 
+
+      for (dateRange in dateRanges) {
+	
+	# Create a subset of the dataframe that only includes the current dateRange
+	dateSubset <- df[df$dateRange == dateRange,]
+	
+	# Create the string for this dateRange
+	startString <- format(dateSubset$starttime[1],"%Y-%m-%dT%H:%M:%OS")
+	endString <- format(dateSubset$endtime[1],"%Y-%m-%dT%H:%M:%OS")
+	dateString <- paste("<date start='",startString,"' end='",endString,"'>",sep="")
+	returnString <- paste(returnString,dateString,sep="")
+	
+	# Organize this subset by snclq
+	snclqs <- sort(unique(dateSubset$snclq))
+	for (id in snclqs) {
+	  
+	  target <- subset(dateSubset, snclq == id)
+	  
+	  # Create the string for this snclq
+	  targetString <- paste("<target snclq='",id,"'>",sep="")
+	  returnString <- paste(returnString,targetString,sep="")
+	  
+	  for (i in seq(nrow(target))) {
+	    
+	    
+	    # Create attributerStrings as needed
+	    elementString <- ''
+	    for (name in elementUnique) {
+	      if (name != "") {
+		valString <- target[[name]][i]
+		if (valString != "") {
+		  elementString <- paste(elementString," ",name,"='",valString,"'",sep="")
+		}            
+	      }
+	    }
+	    
+	    # Create quality_flagString if needed
+	    if (target$quality_flagString[i] == -9) {
+	      qualityString <- ''
+	    } else {
+	      qualityString <- paste("quality_flag='",target$quality_flagString[i],"'",sep="")
+	    }
+	    
+	    # Create the metricString
+	    metricString <- paste("<",target$metricName[i]," ",
+				  elementString," ",
+				  qualityString," ",
+				  "/>",sep="")
+
+	    returnString <- paste(returnString,metricString,sep="")
+	    
+	  } # end of "target" loop for each metric
+	  
+	  returnString <- paste(returnString,"</target>",sep="")      
+	} # end of "snclq" loop
+	
+	returnString <- paste(returnString,"</date>",sep="")
+      } # end of "date" loop
+      
+      returnString <- paste(returnString,"</measurements>",sep="")
+      return(returnString)
+  }
 }
 
 
 ################################################################################
-# Function to convert a MultilpeTimeValueMetric into the XML expected by the 
+# Function to convert a MultipleTimeValueMetric into the XML expected by the 
 # DMC data loader.
 #
-# Here is the first example of what a multi-value metric will looklike:
+# Here is the first example of what a multi-value metric will look like:
 #
 # <measurements>
 #   <date start='2012-02-10T00:00:00.000' end='2012-02-10T09:20:00.000'>

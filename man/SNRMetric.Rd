@@ -16,7 +16,7 @@ SNRMetric(st, algorithm, windowSecs)
 \arguments{
   \item{st}{ a \code{Stream} object containing a seismic signal }
   \item{algorithm}{ a named algorithm to use for calculating SNR (default=\code{"splitWindow"}) }
-  \item{windowSecs}{ width (secs) of the full window used in SNR calculations (default=\code{60}) }
+  \item{windowSecs}{ width (seconds) of the full window used in SNR calculations (default=\code{60}) }
 }
 
 \details{
@@ -54,7 +54,7 @@ A list with a single \code{SingleValueMetric} object is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{
@@ -64,6 +64,7 @@ Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
@@ -76,6 +77,7 @@ tr <- st@traces[[1]]
 # Calculate the SNR metric and show the results
 metricList <- SNRMetric(st)
 dummy <- lapply(metricList, show)
+  }
 }
 
 \keyword{metrics}

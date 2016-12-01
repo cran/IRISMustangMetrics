@@ -7,7 +7,7 @@
 Gaps and overlaps in a signal
 }
 \description{
-The gapsMetric() function calculates metrics associated with gaps and overlaps in a siesmic signal,
+The gapsMetric() function calculates metrics associated with gaps and overlaps in a seismic signal,
 \emph{i.e.} when \code{st} consists of more than one \code{Trace}.
 }
 
@@ -30,7 +30,7 @@ to calculate the following metrics:
   \item{\code{percent_availability}:}{percentage of total requested time for which a signal is available}
 }
 The \code{requestedStarttime} and \code{requestedEndtime} slots for the \code{Stream} are used to determine
-gaps before the start of the firstor after the end of the last \code{Trace} in the \code{Stream}.
+gaps before the start of the first or after the end of the last \code{Trace} in the \code{Stream}.
 }
 
 \value{
@@ -40,7 +40,7 @@ A list of \code{SingleValueMetric} objects is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 \note{
 %%  ~~further notes~~
@@ -52,17 +52,19 @@ See the \code{seismic} package for documentation on \code{Stream} objects and th
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Calculate the gaps metrics and show the results
 metricList <- gapsMetric(st)
 dummy <- lapply(metricList, show)
+  }
 }
 
 \keyword{metrics}

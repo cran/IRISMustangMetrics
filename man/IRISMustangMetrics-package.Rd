@@ -1,0 +1,180 @@
+\docType{package}
+
+\name{IRISMustangMetrics-package}
+\alias{IRISMustangMetrics-package}
+\alias{IRISMustangMetrics}
+
+\title{Utilities for calculating seismic metrics from IRIS DMC data}
+
+\description{
+This package provides S4 classes and functions for calculating metrics from seismological 
+data available from the IRIS Data Management Center (DMC) (\url{http://www.iris.edu/dms/nodes/dmc/}).
+This package is part of the MUSTANG project and is intended for DMC internal use only.
+}
+
+\section{Introduction}{
+  The \pkg{IRISMustangMetrics} package depends upon the \pkg{IRISSeismic} package which  defines
+  new S4 classes and methods for manipulating seismic data.  Please see the "seismic-intro" 
+  vignette for introductory examples on using \pkg{IRISSeismic}.
+}
+
+\author{
+Jonathan Callahan \email{jonathan@mazamascience..com}
+}
+
+\references{
+IRIS DMC web services: \url{http://service.iris.edu/}
+}
+
+\section{History}{
+
+  version 2.0.2
+  \itemize{
+   \item{updates to ISPAQUtils.R}
+  }
+  version 2.0.1
+  \itemize{
+    \item{removed dependency on tidyr package}
+  } 
+  version 2.0.0 -- GeneralValueMetrics
+  \itemize{
+    \item{\code{GeneralValueMetric} class introduced, \code{SingleValueMetric} class deprecated. All metrics that previously returned
+          \code{SingleValueMetric} now return \code{GeneralValueMetric}.}
+    \item{\code{getGeneralValueMetrics()} function added. Retreives metrics measurements from BSS database.}
+    \item{\code{crossCorrelationMetric()} does not return timing_drift. The metric proved unreliable.}
+    \item{users can now supply instrument response information in the form of frequency, amplitude, phase
+          to the function \code{PSDMetric}, in place of the getEvalresp webservice call}
+  }
+    
+  version 1.3.1 -- PSDs
+  \itemize{
+    \item{\code{getPsdMetrics} reworked}
+  }
+
+  version 1.3.0 -- latency
+  \itemize{
+    \item{\code{getLatencyValuesXML()} removed from package.}
+    \item{documentation improvements.}
+    \item{additional error checking for \code{getSingleValueMetrics()}.}
+  }
+
+  version 1.2.7 -- PSDs
+  \itemize{
+    \item{\code{PSDMetrics()} metrics \code{percent_above_nhnm} and \code{percent_below_nlnm} limited to frequencies less than nyquist/1.5.}
+  }
+
+  version 1.2.6 -- PSDs
+  \itemize{
+    \item{Depends on \pkg{IRISSeismic} (>= 1.3.0).}
+    \item{\code{dead_channel_exp} and \code{dead_channel_lin} metrics will only return values for station channel codes matching "BH|HH".}
+  }
+
+  version 1.2.5 -- ISPAQUtils
+  \itemize{
+    \item{ISPAQUtils.R contains functions for use with the ISPAQ standalone metrics system.}
+  }
+
+  version 1.2.4 -- package version dependencies
+  \itemize{
+    \item{Depends on \pkg{IRISSeismic} (>= 1.2.3). Imports \pkg{seismicRoll} (>=1.1.2).}
+  }
+
+  version 1.2.2 -- correlationMetric tweak
+  \itemize{
+    \item{\code{correlationMetric()} allows trace sample lengths to differ by 2 samples without stopping.}
+  }
+
+  version 1.2.1 -- PSDs
+  \itemize{
+    \item{Better fix to very low powers issue in \code{PSDMetrics()} \code{dead_channel_gsn} metric.}
+    \item{\code{PSDMetrics()} shifts PDF bin centers by 0.5 dB.}
+  }
+
+  version 1.2.0 -- PSDs
+  \itemize{
+    \item{\code{PSDMetric()} returns corrected PSD and PDF dataframes in addition to uncorrected PSDs and PSD derived metrics.}
+    \item{Depends on R (>= 3.2.0) and \pkg{IRISSeismic} (>=1.1.7).}
+    \item{Imports \pkg{tidyr}, \pkg{dplyr}.}
+  }
+
+  version 1.1.3 -- bug fix, import version increased
+  \itemize{
+    \item{Fixes typo in \code{SNRMetric()} function \code{windowSecs} argument default value.}
+    \item{Imports \pkg{seismicRoll} (>=1.1.1)}
+  }
+
+  version 1.1.2 -- modifications
+  \itemize{
+    \item{Improves error handling messages.}
+    \item{\code{dailyDCOffsetMetric()} removes unused selectivity argument and adds argument controlling output type.}
+    \item{Fixes bug in \code{dailyDCOffsetMetrics()} related to outlier removal and vector length.}
+    \item{Fixes bug in \code{PSDMetrics()} \code{dead_channel_gsn} metric related to very low power values.}
+    \item{\code{PSDMetrics()} only returns metrics that generate numeric values.}
+  }
+
+  version 1.1.1 -- bug fix
+  \itemize{
+    \item{\code{crossCorrelationMetric()} exits if either input trace is flatlined (all values equal).}
+  }
+
+  version 1.1.0 -- updates package dependencies
+  \itemize{
+    \item{Depends on \pkg{IRISSeismic} (>= 1.1.0).}
+  }
+
+  version 1.0.8 -- new metric and bug fix
+  \itemize{
+    \item{Improves error handling messages.}
+    \item{Adds new \code{dead_channel_gsn} metric to \code{PSDMetric()} function output.}
+    \item{Fixes bug in \code{STALTAMetric()} involving required trace length.}
+  }
+
+  version 1.0.7 -- bug fix
+  \itemize{
+    \item{Fixes issue with \code{spikesMetric()} passing argument values to \code{findOutliers}.}
+  }
+ 
+  version 1.0.6 -- function argument changes
+  \itemize{
+    \item{Changes \code{spikesMetric()} default argument values \code{thresholdMin=10},\code{selectivity=NA},\code{fixedThreshold=TRUE}.}
+    \item{\code{transferFunctionMetric()} now requires input of evalresp fap spectra, new arguments \code{evalresp1} and \code{evalresp2}.}
+    \item{Additional sanity checks for \code{transferFunctionMetric()} and \code{PSDMetric()}.}
+    \item{Depends on \pkg{IRISSeismic} (>= 1.0.10). Imports \pkg{seismicRoll} (>=1.1.0). Imports \pkg{stats}.}
+  }
+
+  version 1.0.5 -- new PSD metric
+  \itemize{
+    \item{Changes URL syntax for MUSTANG web services to use "format=..." instead of "output=...".}
+    \item{Adds new \code{sample_unique} metric to \code{PSDMetric()} output.}
+  }
+
+  version 1.0.3 -- new functionality and bug fixes
+  \itemize{
+    \item{Adds new \code{metricList2DF()} function.}
+    \item{Adds new \code{dead_channel_lin} metric to \code{PSDMetric()} output.}
+    \item{Fixes typo in \code{Class-Metric.R} value string format.}
+  }
+  
+  version 1.0.0 -- First Public Release
+  
+}
+
+%% \seealso{ }
+
+\examples{
+  \dontrun{
+# Open a connection to IRIS DMC webservices
+iris <- new("IrisClient", debug=TRUE)
+
+# Get the seismic data
+starttime <- as.POSIXct("2010-02-27 06:45:00",tz="GMT")
+endtime <- as.POSIXct("2010-02-27 07:45:00",tz="GMT")
+st <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime)
+
+# Apply a metric and show the results
+metricList <- basicStatsMetric(st)
+dummy <- lapply(metricList, show)
+  }
+}
+
+%% Optional keywords

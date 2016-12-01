@@ -49,7 +49,7 @@ Lists of \code{MultipleTimeValueMetric} objects are returned by various metrics 
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \note{
@@ -74,7 +74,7 @@ improves performance of the BSS which expects XML of the following form:
 </measurements>
 }
 
-The \code{quality_flag} is an optional value avialable for storing information related to the
+The \code{quality_flag} is an optional value available for storing information related to the
 processing of a particular metric.  Its meaning will vary from metric to metric.
 }
 
@@ -87,13 +87,14 @@ processing of a particular metric.  Its meaning will vary from metric to metric.
 }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Make sure we're working with a single snclq
 unique_ids <- uniqueIds(st)
@@ -112,6 +113,7 @@ m <- new("MultipleTimeValueMetric", snclq=snclq,
 
 # Show the results
 show(m)
+  }
 }
 
 \keyword{classes}

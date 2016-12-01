@@ -83,11 +83,11 @@ gapsMetric <- function(st) {
   snclq <- st@traces[[1]]@id
 
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_gaps", value=num_gaps)
-  m2 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_gap", value=max_gap)
-  m3 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_overlaps", value=num_overlaps)
-  m4 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_overlap", value=max_overlap)
-  m5 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="percent_availability", value=percent_availability)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_gaps", elementNames=c("value"), elementValues=num_gaps)
+  m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_gap", elementNames=c("value"), elementValues=max_gap, valueStrings=format(max_gap,digits=7, nsmall=3))
+  m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_overlaps", elementNames=c("value"), elementValues=num_overlaps)
+  m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_overlap", elementNames=c("value"), elementValues=max_overlap, valueStrings=format(max_overlap,digits=8))
+  m5 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="percent_availability", elementNames=c("value"), elementValues=percent_availability)
 
   return(c(m1,m2,m3,m4,m5))
   

@@ -3,7 +3,7 @@
 \alias{spectrumMetric2Xml}
 
 
-\title{Convert a SpecturmMetric into XML for the BSS}
+\title{Convert a SpectrumMetric into XML for the BSS}
 
 \description{
 The \code{spectrumMetric2Xml} function converts a \code{SpectrumMetric} into an
@@ -27,7 +27,7 @@ A character string with BSS formatted XML is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -57,16 +57,21 @@ if (length(unique_ids) > 1) {
 snclq <- unique_ids[1]
 
 # Calculate and plot the Power Spectral Density
-psd <- PSD(st)
+psd <- psdList(st)
   
-# Create a Spectrum metric
-# TODO:  total revamp of PSD calculations to match Manochehr's needs
-phases <- rep(0,length(psd$freq))
-m <- new("SpectrumMetric", snclq=snclq, starttime=starttime, endtime=endtime,
-          metricName="psd", freqs=psd$freq, amps=psd$spec, phases=psd$phase)
+# Create a Spectrum metric list
+spectrumMetricList <- list()
+index <- 1
+for (psd in psdList) {
+  spectrumMetricList[[index]] <- new("SpectrumMetric", snclq=snclq,  
+                                      starttime=psd$starttime, endtime=psd$endtime, 
+                                      metricName="psd", freqs=psd$freq,
+                                      amps=psd$spec, phases=psd$freq*0)
+  index <- index + 1
+}
 
 # Show the XML version of the metric
-bssXml <- spectrumMetric2Xml(m)
+bssXml <- spectrumMetric2Xml(spectrumMetricList)
 cat(bssXml)
   }
 }

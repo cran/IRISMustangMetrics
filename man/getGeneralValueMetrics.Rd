@@ -1,20 +1,20 @@
-\name{getSingleValueMetrics}
+\name{getGeneralValueMetrics}
 
-\alias{getSingleValueMetrics}
-\alias{getSingleValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,character-method}
-\alias{getSingleValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,missing-method}
-\alias{getSingleValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,character-method}
-\alias{getSingleValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,missing-method}
+\alias{getGeneralValueMetrics}
+\alias{getGeneralValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,character-method}
+\alias{getGeneralValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,missing-method}
+\alias{getGeneralValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,character-method}
+\alias{getGeneralValueMetrics,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,missing-method}
 
 \title{Retrieve measurements from the MUSTANG BSS }
 
 \description{
-The \code{getSingleValueMetrics} method of the \code{IrisClient} makes a request of the MUSTANG database
-and returns a dataframe containing metrics that are stored as single values, e.g. sample_max, sample_min, etc..
+The \code{getGeneralValueMetrics} method of the \code{IrisClient} makes a request of the MUSTANG database
+and returns a dataframe containing metrics measurments.
 }
 
 \usage{
-getSingleValueMetrics(obj, network, station, location, channel, 
+getGeneralValueMetrics(obj, network, station, location, channel, 
                            starttime, endtime, metricName, constraint, url)
 }
 
@@ -22,8 +22,8 @@ getSingleValueMetrics(obj, network, station, location, channel,
   \item{obj}{ an \code{IrisClient} object }
   \item{network}{ a character string with the two letter seismic network code }
   \item{station}{ a character string with the station code }
-  \item{location}{ a character string with the location code }
-  \item{channel}{ a character string with the three letter channel code }
+  \item{location}{ a character string with the location code, can be "" for wildcard all }
+  \item{channel}{ a character string with the three letter channel code, can be "" for wildcard all }
   \item{starttime}{ a POSIXct class specifying the starttime (GMT) }
   \item{endtime}{ a POSIXct class specifying the endtime (GMT) }
   \item{metricName}{ a character string containing one or more comma separated metric names }
@@ -48,29 +48,25 @@ Any string passed in with the
 
 Error returns from the BSS will stop evaluation and generate an error message.
 
-Most MUSTANG metrics are single valued and can be retrieved with \code{getSingleValueMetrics()}. Examples
-of multi-valued metrics that cannot be returned with this function include "asl_coherence", "orientation_check",
-and "transfer_function".
 }
 
 \value{
 A dataframe with the following columns:
 
 \preformatted{
-~metricName~, value, snclq, starttime, endtime, loadtime
+~metricName~, value, additional values,  snclq, starttime, endtime, loadtime
 }
 
 The \code{loadtime} column contains the time at which this record was loaded into the database.
 
-The dataframe rows will be sorted by increasing starttime.
+The dataframe rows will be sorted by metricName and increasing starttime.
 
-The structure of this dataframe is appropriate for use with the \pkg{ggplot2} plotting package.
 }
 
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan@mazamascience.com}
+Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 }
 
 \note{
@@ -97,20 +93,15 @@ in the dataframe.
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
-starttime <- as.POSIXct("2013-06-01", tz="GMT")
+starttime <- as.POSIXct("2016-08-01", tz="GMT")
 endtime <- starttime + 30*24*3600
-metricName <- "sample_max,sample_min,sample_mean"
+metricName <- "sample_max,sample_mean,orientation_check"
 
 # Get the measurement dataframe
-juneStats <- getSingleValueMetrics(iris,"IU","ANMO","00","BHZ",
+juneStats <- getGeneralValueMetrics(iris,"IU","ANMO","","BH[12Z]",
                                         starttime,endtime,metricName)
 
-# Simple ggplot2 plot
-library(ggplot2)
-p <- ggplot(juneStats, aes(x=starttime,y=value, color=as.factor(metricName))) +
-     geom_step()
-print(p)
-  }
+print(juneStats)
 }
-
+}
 \keyword{ webservices }

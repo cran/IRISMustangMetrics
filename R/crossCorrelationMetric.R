@@ -49,10 +49,10 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   
   # Sanity check number of traces
   if (length(st1@traces) > 1) {
-    stop(paste("crossCorrelationMetric:",st1@traces[[1]]@id,"has multiple traces."))
+    stop(paste("crossCorrelationMetric:",st1@traces[[1]]@id,"has more than one trace."))
   }
   if (length(st2@traces) > 1) {
-    stop(paste("crossCorrelationMetric:",st2@traces[[1]]@id,"has multiple traces."))
+    stop(paste("crossCorrelationMetric:",st2@traces[[1]]@id,"has more than one trace."))
   }
   
   # Get the first (and only) trace and demean and detrend it 
@@ -60,21 +60,27 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   tr2 <- DDT(st2@traces[[1]],TRUE,TRUE,0)
   
   # Sanity check sampling rates
-  if (tr1@stats@sampling_rate < 1) {
-    stop(paste("crossCorrelationMetric:",tr1@id,"has a sampling_rate < 1."))
-  }
-  if (tr2@stats@sampling_rate < 1) {
-    stop(paste("crossCorrelationMetric:",tr2@id,"has a sampling_rate < 1."))
-  }
+  #if (tr1@stats@sampling_rate < 1) {
+  #  stop(paste("crossCorrelationMetric:",tr1@id,"has a sampling_rate < 1."))
+  #}
+  #if (tr2@stats@sampling_rate < 1) {
+  #  stop(paste("crossCorrelationMetric:",tr2@id,"has a sampling_rate < 1."))
+  #}
   
   # Deal with potentially different sampling rates
-  sr1 <- as.integer(round(tr1@stats@sampling_rate))
-  sr2 <- as.integer(round(tr2@stats@sampling_rate))
+  if (tr1@stats@sampling_rate < 1 || tr2@stats@sampling_rate < 1 ) {
+       sr1 <- tr1@stats@sampling_rate
+       sr2 <- tr2@stats@sampling_rate
+  } else {
+       sr1 <- as.integer(round(tr1@stats@sampling_rate))
+       sr2 <- as.integer(round(tr2@stats@sampling_rate))
+  }
+
   sampling_rate <- min(sr1,sr2)
   
   if (sr1 > sampling_rate) {
     if (pracma::rem(sr1,sampling_rate) > 0) {
-      stop(paste0("crossCorrelationMetric: sampling rates are not multiples of eachother:",
+      stop(paste0("crossCorrelationMetric: sampling rates are not multiples of each other:",
                   tr1@id,"=",sr1,", ",tr2@id,"=",sr2))
     }
     increment <- round(sr1/sampling_rate)
@@ -85,7 +91,7 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   
   if (sr2 > sampling_rate) {
     if (pracma::rem(sr2,sampling_rate) > 0) {
-      stop(paste0("crossCorrelationMetric: sampling rates are not multiples of eachother:",
+      stop(paste0("crossCorrelationMetric: sampling rates are not multiples of each other:",
                   tr1@id,"=",sr1,", ",tr2@id,"=",sr2))
     }
     increment <- round(sr2/sampling_rate)
@@ -95,8 +101,19 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   }
   
   # Sanity check that we have valid data everywhere
-  if ( any(is.na(d1)) || any(is.na(d2)) ) {
-    stop(paste("crossCorrelationMetric: NA values generated during resampling"))
+  if ( any(is.na(d1)))  {
+    stop(paste("crossCorrelationMetric:", tr1@id, "NA values were generated during resampling"))
+  }
+  if (any(is.na(d2))) {
+    stop(paste("crossCorrelationMetric:", tr2@id, "NA values were generated during resampling"))
+  }
+
+  # Sanity check for flatlined data 
+  if (isDC(tr1)) {
+    stop(paste("crossCorrelationMetric:", tr1@id, "has one unique sample value (flatlined). Standard deviation is zero, cross-correlation is undefined."))
+  }
+  if (isDC(tr2)) {
+    stop(paste("crossCorrelationMetric:", tr2@id, "has one unique sample value (flatlined). Standard deviation is zero, cross-correlation is undefined."))
   }
   
   #-----------------------------------------------------------------------------
@@ -125,14 +142,18 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   peak_lag <- lagPoints * 1/sampling_rate
   
   # Create and return metrics
-  m1 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime, 
-            metricName="polarity_check", value=peak_correlation,
-            attributeName="snclq2", attributeValueString=tr2@id)
-  m2 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime,
-            metricName="timing_drift", value=peak_lag,
-            attributeName="snclq2", attributeValueString=tr2@id)
+  #m1 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime, 
+  #          metricName="polarity_check", value=peak_correlation,
+  #          attributeName="snclq2", attributeValueString=tr2@id)
+  #m2 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime,
+  #          metricName="timing_drift", value=peak_lag,
+  #          attributeName="snclq2", attributeValueString=tr2@id)
+
+  m1 <- new("GeneralValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime,
+            metricName="polarity_check", elementNames=c("value","snclq2"), elementValues=c(peak_correlation,tr2@id),
+            valueStrings=c(format(peak_correlation,digits=7),tr2@id))
   
-  return(c(m1,m2))
+  return(c(m1))
   
 }
 

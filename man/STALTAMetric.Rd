@@ -16,8 +16,8 @@ STALTAMetric(st, staSecs, ltaSecs, increment, algorithm)
 
 \arguments{
   \item{st}{a \code{Stream} object containing a seismic signal}
-  \item{staSecs}{length of the \bold{S}hort averaging window in secs (default=3)}
-  \item{ltaSecs}{length of the \bold{L}ong averaging windowin secs (default=30)}
+  \item{staSecs}{length of the \bold{s}hort term averaging window in seconds (default=3)}
+  \item{ltaSecs}{length of the \bold{l}ong term averaging window in seconds (default=30)}
   \item{algorithm}{algorithm to be used (default="classic_LR")}
   \item{increment}{increment used when sliding the averaging windows to the next location (default=1)}
 }
@@ -62,7 +62,7 @@ name is \code{max_stalta}.
 }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \note{

@@ -32,6 +32,9 @@ createBssUrl(obj, network, station, location, channel,
 }
 
 \details{
+
+A blank location code should be specified as \code{location="--"}; Using \code{location=""} will return all location codes.
+
 The default MUSTANG measurement service when \code{url} is not specified is:
 
 \code{http://service.iris.edu/mustang/measurements/1/query?}
@@ -45,7 +48,7 @@ A character string containing a BSS request URL
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -56,6 +59,7 @@ Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 
 %% max preformatted length ---------------------------------------------------
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
@@ -68,6 +72,7 @@ url <- createBssUrl(iris,"IU","ANMO","00","BHZ",
                     starttime,endtime,metricName)
 
 # This URL can be pasted into a web browser to see the BSS return values
+  }
 }
 
 \keyword{ webservices }

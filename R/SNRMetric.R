@@ -25,7 +25,7 @@
 ################################################################################
 #
 
-SNRMetric <- function(st, algorithm="splitWindow", windowSecs=600) {
+SNRMetric <- function(st, algorithm="splitWindow", windowSecs=60) {
     
   # Extract the trace and associated information
   tr <- st@traces[[1]]
@@ -33,9 +33,9 @@ SNRMetric <- function(st, algorithm="splitWindow", windowSecs=600) {
   starttime <- tr@stats@starttime
   endtime <- tr@stats@endtime
   
-  # Chck for gaps
+  # Check for gaps
   if (length(st@traces) > 1) {    
-    stop(paste("skipping", snclq, "because it has gaps"))
+    stop(paste("SNRMetric: skipping", snclq, "because it has gaps"))
   }
      
   # Bail out if we have don't have enough data
@@ -83,7 +83,9 @@ SNRMetric <- function(st, algorithm="splitWindow", windowSecs=600) {
   }
   
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_snr", value=snr)
+  #m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_snr", value=snr)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_snr",
+             elementNames=c("value"), elementValues=snr)
   
   return(c(m1))
   

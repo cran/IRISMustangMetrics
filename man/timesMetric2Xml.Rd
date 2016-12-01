@@ -27,7 +27,7 @@ A character string with BSS formatted XML is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -37,13 +37,14 @@ Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Make sure we're working with a single snclq
 unique_ids <- uniqueIds(st)
@@ -62,6 +63,7 @@ m <- new("MultipleTimeValueMetric", snclq=snclq, starttime=starttime,
 # Show the XML version of the metric
 bssXml <- timesMetric2Xml(m)
 cat(bssXml)
+  }
 }
 
 

@@ -34,7 +34,7 @@ DCOffsetTimesMetric <- function(st, windowSecs=1800, incrementSecs=windowSecs/2,
   
   # Bail out if we have a DC signal
   if (isDC(tr)) {
-    stop(paste("SNRMetric: Trace data is a DC signal."))
+    stop(paste("DCOffsetTimesMetric: Trace data is a DC signal."))
   }
   
   # Calculate chunk information

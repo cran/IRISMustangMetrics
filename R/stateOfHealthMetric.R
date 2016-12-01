@@ -86,23 +86,21 @@ stateOfHealthMetric <- function(st) {
   
   
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="calibration_signal", value=calibration_signal)
-  m2 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="timing_correction", value=timing_correction)
-  m3 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_begin", value=event_begin)
-  m4 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_end", value=event_end)
-  m5 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_in_progress", value=event_in_progress)
-                   
-  m6 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="clock_locked", value=clock_locked)
-                   
-  m7 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="amplifier_saturation", value=amplifier_saturation)
-  m8 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="digitizer_clipping", value=digitizer_clipping)
-  m9 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="spikes", value=spikes)
-  m10 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="glitches", value=glitches)
-  m11 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="missing_padded_data", value=missing_padded_data)
-  m12 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="telemetry_sync_error", value=telemetry_sync_error)
-  m13 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="digital_filter_charging", value=digital_filter_charging)
-  m14 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="suspect_time_tag", value=suspect_time_tag)
-  m15 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="timing_quality", value=timing_quality)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="calibration_signal", elementNames=c("value"), elementValues=calibration_signal)
+  m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="timing_correction", elementNames=c("value"), elementValues=timing_correction)
+  m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_begin", elementNames=c("value"), elementValues=event_begin)
+  m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_end", elementNames=c("value"), elementValues=event_end)
+  m5 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="event_in_progress", elementNames=c("value"), elementValues=event_in_progress)
+  m6 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="clock_locked", elementNames=c("value"), elementValues=clock_locked)
+  m7 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="amplifier_saturation", elementNames=c("value"), elementValues=amplifier_saturation)
+  m8 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="digitizer_clipping", elementNames=c("value"), elementValues=digitizer_clipping)
+  m9 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="spikes", elementNames=c("value"), elementValues=spikes)
+  m10 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="glitches", elementNames=c("value"), elementValues=glitches)
+  m11 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="missing_padded_data", elementNames=c("value"), elementValues=missing_padded_data)
+  m12 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="telemetry_sync_error", elementNames=c("value"), elementValues=telemetry_sync_error)
+  m13 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="digital_filter_charging", elementNames=c("value"), elementValues=digital_filter_charging)
+  m14 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="suspect_time_tag", elementNames=c("value"), elementValues=suspect_time_tag)
+  m15 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="timing_quality", elementNames=c("value"), elementValues=timing_quality)
   
   return(c(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15))
   

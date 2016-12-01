@@ -47,8 +47,9 @@ correlationMetric <- function(st1, st2) {
   # Sanity check lengths
   l1 <- length(tr1)
   l2 <- length(tr2)
-  # Only complain if if sample lengths differ AND the difference is greater than the inverse sampling rate
-  if ( (abs(l1 - l2) > 1) && (abs(l1 - l2) > 1/tr1@stats@sampling_rate) )  {
+
+  # Only complain if if sample lengths differ by more than 2 samples
+  if ( abs(l1 - l2) > 2 ) {
     stop(paste("correlationMetric: Incompatible lengths tr1 =",l1,", tr2 =",l2))      
   } else {
     min_length <- min(l1,l2)
@@ -57,6 +58,14 @@ correlationMetric <- function(st1, st2) {
   # Sanity check network and station
   if (tr1@stats@network != tr2@stats@network || tr1@stats@station != tr2@stats@station) {
     stop(paste("correlationMetric: Incompatible trace ids '", tr1@id, "', '", tr2@id, "'", sep=""))
+  }
+
+  # Sanity check for flatlined data 
+  if (isDC(tr1)) {
+    stop(paste("correlationMetric:", tr1@id, "has one unique sample value (flatlined). Standard deviation is zero, correlation is undefined."))
+  }
+  if (isDC(tr2)) {
+    stop(paste("correlationMetric:", tr2@id, "has one unique sample value (flatlined). Standard deviation is zero, correlation is undefined."))
   }
 
   # Create two-channel ids if needed
@@ -74,7 +83,8 @@ correlationMetric <- function(st1, st2) {
   cor <- cor(tr1@data[1:min_length], tr2@data[1:min_length], use="na.or.complete")
 
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="cross_talk", value=cor)
+  #m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="cross_talk", value=cor)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="cross_talk", elementNames=c("value"), elementValues=cor, valueStrings=c(format(cor,digits=7,nsmall=3)))
 
   return(c(m1))
 

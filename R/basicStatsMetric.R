@@ -40,14 +40,21 @@ basicStatsMetric <- function(st) {
   mean <- mean(st)
   max <- max(st)
   rmsVariance <- rmsVariance(st)
-  
+
+  countUnique <- function(x){
+     data <- unlist(lapply(x@traces,slot,"data"))
+     return(length(unique(stats::na.omit(data))))
+  }
+  uniqueSample <- countUnique(st)
+
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_min", value=min)
-  m2 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_median", value=median)
-  m3 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_mean", value=mean)
-  m4 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_max", value=max)
-  m5 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_rms", value=rmsVariance)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_min", elementNames=c("value"), elementValues=min)
+  m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_median", elementNames=c("value"), elementValues=median)
+  m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_mean", elementNames=c("value"), elementValues=mean)
+  m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_max", elementNames=c("value"), elementValues=max)
+  m5 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_rms", elementNames=c("value"), elementValues=rmsVariance)
+  m6 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="sample_unique", elementNames=c("value"), elementValues=uniqueSample)
   
-  return(c(m1,m2,m3,m4,m5))
+  return(c(m1,m2,m3,m4,m5,m6))
   
 }

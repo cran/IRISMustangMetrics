@@ -5,8 +5,8 @@
 \title{Correlation between channels}
 
 \description{
-The crossCorrelationMetric() function calculates the \code{peak_correlation}
-and \code{peak_lag} associated with two streams of seismic data.
+The crossCorrelationMetric() function calculates the maximum absolute correlation (\code{polarity_check}) 
+and lag at maximum correlation (\code{timing_drift}) associated with two streams of seismic data.
 }
 
 \usage{
@@ -25,25 +25,29 @@ crossCorrelationMetric(st1, st2, maxLagSecs=10, filter=signal::butter(2,0.2))
 Details of the algorithm are as follows:
 \itemize{
   \item{Both signals are demeaned and detrended}
-  \item{If one signal has a higher sampling rate, it is decimated to the lower sampling rate using an IIR filter see(\code{signal::decimate}).}
-  \item{Both signals are filtered, by default with a Butterworth low pass filter see(\code{signal::filter}).}
-  \item{Signals are cross-correlated using the ccf() function.}
+  \item{If one signal has a higher sampling rate, it is decimated to the lower sampling rate using an IIR filter if it is a multiple of the lower sample rate. See (\code{signal::decimate}).}
+  \item{Both signals are filtered, by default with a Butterworth low pass filter. See (\code{signal::filter}).}
+  \item{Signals are cross-correlated using the \code{stats::ccf()} function.}
 }
 
-The maximum absolute correlation is saved as \code{peak_correlation} while the lag at peak correlation is saved as \code{peak_lag}.
+The maximum absolute correlation is saved as \code{polarity_check} while the lag at peak correlation is saved as \code{timing_drift}.
 
 \bold{Note:} For cross-correlation, seismic signals must not have any gaps -- they must be contained in a single \code{Trace} object.
 }
 
 \value{
 A list with two \code{SingleValueMetric} objects is returned.
-The metric names are \code{peak_correlation} and \code{peak_lag}.
+The metric names are \code{polarity_check} and \code{timing_drift}.
+}
+
+\note{
+\code{timing_drift} is deprecated and will be removed in the future. 
 }
 
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com} (R code),
+Jonathan Callahan \email{jonathan@mazamascience.com} (R code),
 Mary Templeton \email{met@iris.washington.edu} (algorithm)
 }
 
@@ -56,6 +60,7 @@ The metricList generated for this two-channel metric will have an additional \co
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
@@ -67,24 +72,7 @@ st2 <- getSNCL(iris,"NM.SLM.00.BHZ",starttime+3,endtime+3)
 
 # Cross-correlate
 crossCorrelationMetric(st1,st2)
-
-#[[1]]
-# SingleValueMetric 
-#  metric:        peak_correlation
-#  snclq:         NM.SLM.00.BHZ.M
-#  starttime:     2013-11-12 07:09:45
-#  endtime:       2013-11-12 07:19:45
-#  value:         0.999
-#  snclq2:    NM.SLM.00.BHZ.M
-#
-#[[2]]
-#SingleValueMetric 
-#  metric:        peak_lag
-#  snclq:         NM.SLM.00.BHZ.M
-#  starttime:     2013-11-12 07:09:45
-#  endtime:       2013-11-12 07:19:45
-#  value:         3.000
-#  snclq2:    NM.SLM.00.BHZ.M
+  }
 }
 
 \keyword{metrics}

@@ -15,12 +15,14 @@ Response information is then obtained from the \href{http://service.iris.edu/iri
 }
 
 \usage{
-transferFunctionMetric(st1, st2)
+transferFunctionMetric(st1, st2, evalresp1, evalresp2)
 }
 
 \arguments{
   \item{st1}{a \code{Stream} object containing a seismic signal}
   \item{st2}{a \code{Stream} object containing a seismic signal}
+  \item{evalresp1}{a \code{data frame} containing an amplitude and phase spectrum}
+  \item{evalresp2}{a \code{data frame} containing an amplitude and phase spectrum}
 }
 
 \details{
@@ -69,15 +71,15 @@ Whenever \code{ms_coherence ~= 1.0}, properly functioning seismometers should ha
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com} (R code),
+Jonathan Callahan \email{jonathan@mazamascience.com} (R code),
 Mary Templeton \email{met@iris.washington.edu} (algorithm)
 }
 
 \note{
 Seismic streams passed to transferFunctionMetric() must have the same network, station
 and channel and must cover the same time range. The two channels should also have values of
-azimuth and dip within five degrees of each other.  If sampling rates differ, the stream with
-the higher sampling rate will be decimated to match the lower sampling rate.
+azimuth and dip within five degrees of each other.  If sampling rates differ and one is a multiple
+of the other, the stream with the higher sampling rate will be decimated to match the lower sampling rate.
 
 The metricList generated for these two-channel metrics will have a SNCL code of the form:
 \code{N.S.L1:L2.C.Q}.
@@ -88,19 +90,31 @@ The metricList generated for these two-channel metrics will have a SNCL code of 
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Create a new IrisClient
 iris <- new("IrisClient", debug=TRUE)
 
 # Get seismic data
 starttime <- as.POSIXct("2011-05-01", tz="GMT")
 endtime <- starttime + 3600
+# These values are specific to two 40 sps channels
+minfreq <- 0.005255603
+maxfreq <- 19.7403
+nfreq <- 96
+units <- 'def'
+output <- 'fap'
 
 st1 <- getDataselect(iris,"CI","PASC","00","BHZ",starttime,endtime)
 st2 <- getDataselect(iris,"CI","PASC","10","BHZ",starttime,endtime)
+evalresp1 <- getEvalresp(iris, "CI", "PASC", "00", "BHZ", starttime, 
+                         minfreq, maxfreq, nfreq, units, output)
+evalresp2 <- getEvalresp(iris, "CI", "PASC", "10", "BHZ", starttime, 
+                         minfreq, maxfreq, nfreq, units, output)
 
 # Calculate metrics
-metricList <- transferFunctionMetric(st1,st2)
+metricList <- transferFunctionMetric(st1,st2,evalresp1,evalresp2)
 print(metricList)
+  }
 }
 
 \keyword{metrics}

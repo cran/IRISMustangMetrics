@@ -52,11 +52,11 @@ Objects can be created by calls of the form:
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \note{
-The \code{quality_flag} is an optional value avialable for storing information related to the
+The \code{quality_flag} is an optional value available for storing information related to the
 processing of a particular metric.  Its meaning will vary from metric to metric.
 }
 

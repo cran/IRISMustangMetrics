@@ -32,7 +32,7 @@ The automatically generated filename is returned invisibly.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -55,12 +55,12 @@ iris <- new("IrisClient")
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Apply a metric and show the results
 metricList <- stateOfHealthMetric(st)
 metricList <- append(metricList, basicStatsMetric(st))
-saveMetricList(metricList,id='AK.PIN..VEA')
+saveMetricList(metricList,id='AK.PIN..BHZ')
   }
 }
 

@@ -55,8 +55,24 @@
 #       start & end time of the noise window
 
 
-transferFunctionMetric <- function(st1, st2) {
-  
+transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
+
+  # TransferFunctionMetric was updated to accept two seismic traces plus two 
+  # evalresp fap spectra.  Spectra had previously been calculated inside this
+  # function, but since we are now rotating horizontal channels for the secondary 
+  # instrument to match those of the primary, the spectra must also be rotated
+  # before being passed.  This functionality is now in the generateMetrics_transferFunction
+  # function (see generateMetrics_transferFunction.R) 
+  #
+  # I have also modified phase difference reporting so that its sign is preserved. 
+  #
+  # Also, channel names use the convention SS:PPP where SS is the first two letters 
+  # of the secondary channel code and PPP is all three channels of the primary 
+  # channel code. This bookkeeping convention clarifies cases where channel names 
+  # being compared have different letters.  Only the first two characters of the 
+  # secondary instrument are used since this instrument may or may not be rotated.
+  # met (2016/04/13)
+
   #-----------------------------------------------------------------------------
   # Configurable element
   #-----------------------------------------------------------------------------
@@ -74,10 +90,10 @@ transferFunctionMetric <- function(st1, st2) {
   
   # Sanity check number of traces
   if (length(st1@traces) > 1) {
-    stop(paste("transferFunctionMetric:",st1@traces[[1]]@id,"has multiple traces."))
+    stop(paste("transferFunctionMetric:",st1@traces[[1]]@id,"has more than one trace."))
   }
   if (length(st2@traces) > 1) {
-    stop(paste("transferFunctionMetric:",st2@traces[[1]]@id,"has multiple traces."))
+    stop(paste("transferFunctionMetric:",st2@traces[[1]]@id,"has more than one trace."))
   }
   
   tr1 <- st1@traces[[1]]
@@ -110,7 +126,7 @@ transferFunctionMetric <- function(st1, st2) {
   
   if (sr1 > sampling_rate) {
     if (pracma::rem(sr1,sampling_rate) > 0) {
-      stop(paste("transferFunctionMetric: sampling rates are not multiples of eachother"))
+      stop(paste("transferFunctionMetric: sampling rates are not multiples of each other,", tr1@id,",", tr2@id))
     }
     increment <- round(sr1/sampling_rate)
     d1 <- signal::decimate(tr1@data,increment)      
@@ -120,7 +136,7 @@ transferFunctionMetric <- function(st1, st2) {
   
   if (sr2 > sampling_rate) {
     if (pracma::rem(sr2,sampling_rate) > 0) {
-      stop(paste("transferFunctionMetric: sampling rates are not multiples of eachother"))
+      stop(paste("transferFunctionMetric: sampling rates are not multiples of each other,", tr1@id,",", tr2@id))
     }
     increment <- round(sr2/sampling_rate)
     d2 <- signal::decimate(tr2@data,increment)      
@@ -130,7 +146,7 @@ transferFunctionMetric <- function(st1, st2) {
   
   # Sanity check that we have valid data everywhere
   if ( any(is.na(d1)) || any(is.na(d2)) ) {
-    stop(paste("transferFunctionMetric: NA values generated during resampling"))
+    stop(paste("transferFunctionMetric: NA values generated during resampling,", tr1@id,",", tr2@id))
   }
   
   #-----------------------------------------------------------------------------
@@ -161,11 +177,8 @@ transferFunctionMetric <- function(st1, st2) {
   pow2 <- floor(log(length(d1),2))
   truncatedLength <- 2^pow2
   
-  # Get ready to use exists() inside the loop by guaranteeing 'dfSum' doesn't exist now.
-  if (exists('dfSum')) {
-    rm('dfSum')
-  }
-  
+  dfSum <- c()
+
   # Divide the truncated trace data into 13 segments with 75% overlap
   for (i in 0:12) {
     
@@ -175,7 +188,12 @@ transferFunctionMetric <- function(st1, st2) {
     # Create 'timseries' objects
     ts1 <- stats::ts(d1[first:last],frequency=sampling_rate)
     ts2 <- stats::ts(d2[first:last],frequency=sampling_rate)
-    
+
+    # Sanity check that we have valid data everywhere
+    if ( any(is.na(ts1)) || any(is.na(ts2)) ) {
+      stop(paste("transferFunctionMetric: NA values generated during smoothing,", tr1@id,",", tr2@id))
+    }
+
     # Cross-spectrum
     df <- crossSpectrum(stats::ts.union(ts1,ts2),
                         spans=spans,
@@ -194,7 +212,7 @@ transferFunctionMetric <- function(st1, st2) {
     
     # Create a summary dataframe if it doesn't exist.
     # Otherwise add each column of 'df' to it's similarly named column in 'dfSum'
-    if (!exists('dfSum')) {
+    if(is.null(dfSum)) {
       dfSum <- df
     } else {
       dfSum <- dfSum + df
@@ -226,29 +244,6 @@ transferFunctionMetric <- function(st1, st2) {
   
   # Calculate the corresponding response amplitude ratio and phase difference for x and y:
   
-  # NOTE:  The frequencies of the McNamara bins are within the range loFreq:hiFreq.
-  # NOTE:  But the fact that are aligned to alignFreq means that the minimum frequency
-  # NOTE:  will be a little above loFreq and the maximum frequency will be below hiFreq.
-  minfreq <- min(DF$freq)
-  maxfreq <- max(DF$freq)
-  nfreq <- length(DF$freq)
-  units <- 'def'
-  output <- 'fap'
-  
-  # Get evalresp data 
-  iris <- new("IrisClient")
-  evalresp1 <- getEvalresp(iris,
-                           tr1@stats@network, tr1@stats@station,
-                           tr1@stats@location, tr1@stats@channel,
-                           starttime,
-                           minfreq, maxfreq, nfreq, units, output)
-  
-  evalresp2 <- getEvalresp(iris,
-                           tr2@stats@network, tr2@stats@station,
-                           tr2@stats@location, tr2@stats@channel,
-                           starttime,
-                           minfreq, maxfreq, nfreq, units, output)
-  
   # NOTE:  Order here is important!
   # NOTE:  To compare against Mod(Pxy/Pxx) we need to use evalresp2$amp / evalresp1$amp
   # NOTE:  (see seismic/test/transferFunctionValidation.R)
@@ -264,7 +259,7 @@ transferFunctionMetric <- function(st1, st2) {
   dataRespGainRatio <- avgDataAmp / avgRespAmp
   dataRespPhaseDiff <- avgDataPhase - avgRespPhase
   
-  dataRespPhaseDiffMagnitude <- ifelse( abs(dataRespPhaseDiff)>180, 360-abs(dataRespPhaseDiff), abs(dataRespPhaseDiff) )
+  dataRespPhaseDiffMagnitude <- ifelse( abs(dataRespPhaseDiff)>180, 360-dataRespPhaseDiff, dataRespPhaseDiff )
   
   # NOTE:  Order here is important!
   # NOTE:  To match Mary Templeton's expectations from her MATLAB script we need specify "2:1"
@@ -275,21 +270,17 @@ transferFunctionMetric <- function(st1, st2) {
     locations <- paste(locations, ":", tr1@stats@location, sep="")
   }
   channels <- tr2@stats@channel
-  if (tr2@stats@channel != tr1@stats@channel) {
-    channels <- paste(channels, ":", tr1@stats@channel, sep="")
-  }
+  channels <- gsub(".$",":", channels)
+  channels <- paste(channels, tr1@stats@channel, sep="")
+
   snclq <- paste(tr1@stats@network, tr1@stats@station, locations, channels, tr1@stats@quality, sep=".")
   
-  # Create and return a list with a single, multi-attribute SingleValueMetric
-  attributeName <- c("gain_ratio","phase_diff","ms_coherence")
-  attributeValueString <- c(format(dataRespGainRatio,digits=4),
-                            format(dataRespPhaseDiffMagnitude,digits=4),
-                            format(avgCoherence,digits=4))
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime,
-            metricName="transfer_function", value=as.numeric(NA),
-            attributeName=attributeName, attributeValueString=attributeValueString)
-  
-  return(c(m1))
-  
-}
+  elementNames <- c("gain_ratio", "phase_diff", "ms_coherence")
+  elementValues <- c(dataRespGainRatio, dataRespPhaseDiffMagnitude, avgCoherence)
+  valueStrings <- c(format(dataRespGainRatio,digits=7,nsmall=4), format(dataRespPhaseDiffMagnitude,digits=7,nsmall=4), format(avgCoherence,digits=7,nsmall=4))
 
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime,
+             metricName="transfer_function", elementNames=elementNames, elementValues=elementValues)
+
+  return(c(m1))
+}

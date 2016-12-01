@@ -38,7 +38,7 @@ The metric name is \code{cross_talk}.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \note{
@@ -61,9 +61,9 @@ iris <- new("IrisClient")
 # Get seismic traces
 starttime <- as.POSIXct("2013-03-01", tz="GMT")
 endtime <- as.POSIXct("2013-03-02",tz="GMT")
-stZ <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime)
-st1 <- getDataselect(iris,"IU","ANMO","00","BH1",starttime,endtime)
-st2 <- getDataselect(iris,"IU","ANMO","00","BH2",starttime,endtime)
+stZ <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime,inclusiveEnd=FALSE)
+st1 <- getDataselect(iris,"IU","ANMO","00","BH1",starttime,endtime,inclusiveEnd=FALSE)
+st2 <- getDataselect(iris,"IU","ANMO","00","BH2",starttime,endtime,inclusiveEnd=FALSE)
 
 # Calculate correlationMetric
 correlationMetric(stZ,st1)[[1]]

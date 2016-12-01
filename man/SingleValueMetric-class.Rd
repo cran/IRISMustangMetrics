@@ -16,7 +16,8 @@
 
 \description{
 A container for metrics results and associated metadata.  This information is used to create XML that is
-then submitted to the MUSTANG Backend Storage System (BSS).
+then submitted to the MUSTANG Backend Storage System (BSS). This has been superceded by \code{GeneralValueMetric} 
+and is no longer in use.
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form:
@@ -52,7 +53,7 @@ Lists of \code{SingleValueMetric} objects are returned by various metrics functi
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \note{
@@ -95,17 +96,19 @@ The \code{attributeName} and \code{attributeValueString} slots can be used to st
 %% \seealso{ }
 
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
 # Get the waveform
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st <- getDataselect(iris,"AK","PIN","","VEA",starttime,endtime)
+st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime)
 
 # Apply a metric and show the results
 metricList <- basicStatsMetric(st)
 show(metricList[[1]])
+  }
 }
 
 \keyword{classes}

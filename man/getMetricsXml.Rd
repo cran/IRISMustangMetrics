@@ -46,7 +46,7 @@ A character string with the XML response from the BSS is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -66,7 +66,7 @@ starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
 
 # Get the measurement XML
-xml <- getMetricsXml(iris,"AK","PIN","","VEA",
+xml <- getMetricsXml(iris,"AK","PIN","","BHZ",
                           starttime,endtime,metricName="sample_mean",
                           url="http://service.iris.edu/mustang/measurements/1/query?")
   }

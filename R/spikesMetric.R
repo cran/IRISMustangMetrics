@@ -24,48 +24,36 @@
 #
 #   - num_spikes
 #
-# This metric applies the roll_hampel filter from the 'seismicRolll' package.
+# This metric applies the roll_hampel filter from the 'seismicRoll' package.
 # See:  "Median absolute deviation (MAD) outlier in Time Series"
 
-spikesMetric <- function(st, windowSize=41, thresholdMin=6, selectivity=0.4) {
+spikesMetric <- function(st, windowSize=41, thresholdMin=10, selectivity=NA, fixedThreshold=TRUE) {
   
   starttime <- st@requestedStarttime
   endtime <- st@requestedEndtime
+
+  num_traces <- length(st@traces)
+  x <- sapply(1:length(st@traces),function(x) { c(st@traces[[x]]@data) })
+  x <- c(x, recursive=TRUE)
     
   # Calculate the total number of outliers from all traces
-  count <- 0
-  for (tr in st@traces) {
-    
-    result <- try( outlierIndices <- seismicRoll::findOutliers(tr@data, windowSize, thresholdMin, selectivity),
+  count <- 0  
+  result <- try( outlierIndices <- seismicRoll::findOutliers(x, n=windowSize, thresholdMin=thresholdMin ,selectivity=selectivity, fixedThreshold=fixedThreshold),
                    silent=TRUE )
     
-    if (class(result)[1] == "try-error" ) {      
-      err_msg <- geterrmessage()
-      if (stringr::str_detect(err_msg,"n cannot be greater than length")) {
-        # Skip very short trace segments
-        next
-      } else {
-        ###MCRExitCode <- 1
-        ###MCRWarning(paste("spikesMetric: skipping a trace in", tr@id, "with an unhandled error", err_msg))
-        next
-      } 
-    } else {
-      
-      # NOTE:  Ignore adjacent outliers when determining the count of spikes.
+  if (class(result) != "try-error" ) {    
+      # NOTE:  Ignore adjacent outliers when determining the count of spikes. 
       # NOTE:  But be sure there is at least one spike if there is at least one outlier.
-      newCount <- length(which(diff(outlierIndices) > 1))
-      if (length(outlierIndices) > 0 && newCount == 0) {
-        newCount <- 1
+      if (length(outlierIndices) != 0 ) {
+          count <- length(which(diff(outlierIndices) > 1)) + 1
       }
-      count <- count + newCount
-      
-    }
-    
-  }  
-  
+  } else { 
+     stop(paste("spikesMetric: skipping ", st@traces[[1]]@id, geterrmessage())) 
+  } 
+ 
   # Create and return a list of Metric objects
   snclq <- st@traces[[1]]@id
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_spikes", value=count)
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="num_spikes", elementNames=c("value"), elementValues=count)
 
   return(c(m1))
   

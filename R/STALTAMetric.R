@@ -35,7 +35,7 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
   # Make sure we're working with a single snclq
   unique_ids <- uniqueIds(st)
   if (length(unique_ids) > 1) {
-    stop(paste("meanMetric: Stream has",unique_ids,"unique identifiers"))
+    stop(paste("STALTAMetric: Stream has",unique_ids,"unique identifiers"))
   }
   snclq <- unique_ids[1]
   
@@ -52,12 +52,20 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
     
     # Make sure trace has enough data
     nlta <- ltaSecs * trace@stats@sampling_rate
-    if (length(trace) < nlta) {
+    nsta <- staSecs * trace@stats@sampling_rate
+    if (length(trace) <= (nlta+nsta)) {
       next
     }
     
     # Get a vector of STALTA values
     stalta <- STALTA(trace, staSecs, ltaSecs, algorithm, demean, detrend, taper, increment)
+
+    stalta[is.infinite(stalta)] <- NA  # when result blows up to infinity, replace with NA
+
+    if(all(is.na(stalta))) {
+        stop("STALTAMetric: stalta returns a vector with all NA or NaN")
+    }
+
     traceMaxSTALTA <- max(stalta, na.rm=TRUE)
     
     # Calculate the time at which this STALTA maximum occurred
@@ -72,9 +80,13 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
   }
   
   # Create and return a list of Metric objects
-  m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime,
-            metricName="max_stalta", value=maxSTALTA,
-            attributeName="time", attributeValueString=format(eventTime,format="%Y-%m-%dT%H:%M:%S"))
+  #m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime,
+  #          metricName="max_stalta", value=maxSTALTA,
+  #          attributeName="time", attributeValueString=format(eventTime,format="%Y-%m-%dT%H:%M:%S"))
+
+  m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_stalta",
+             elementNames=c("value","time"), elementValues=c(maxSTALTA, eventTime),
+             valueStrings=c(format(maxSTALTA), format(eventTime,format="%Y-%m-%dT%H:%M:%S")))
   
   return(c(m1))
   

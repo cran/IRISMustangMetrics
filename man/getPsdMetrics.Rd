@@ -8,12 +8,11 @@
 
 \description{
 The \code{getPsdMetrics} method of the \code{IrisClient} makes a request of the MUSTANG BSS (Backend Storage System)
-and returns a dataframe containing Power Spectral Density (PSD) measurements.
+and returns a dataframe containing instrument corrected Power Spectral Density (PSD) measurements.
 }
 
 \usage{
-getPsdMetrics(obj, network, station, location, channel, 
-                   starttime, endtime, url)
+getPsdMetrics(obj, network, station, location, channel, starttime, endtime, url) 
 }
 
 \arguments{
@@ -30,9 +29,7 @@ getPsdMetrics(obj, network, station, location, channel,
 \details{
 The default BSS measurement service when \code{url} is not specified is:
 
-\code{http://service.iris.edu/mustang/measurements/1/query?}
-
-The metric name is automatically specified by appending \code{metric=psd} to this url.
+\code{http://service.iris.edu/mustang/noise-psd/1/query?}
 
 Data returned from the BSS are converted into an \R dataframe.
 
@@ -43,14 +40,14 @@ Error returns from the BSS will stop evaluation and generate an error message.
 A dataframe with the following columns:
 
 \preformatted{
-target, starttime, endtime, frequency, amplitude, phase
+target, starttime, endtime, frequency, power
 }
 }
 
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -70,9 +67,7 @@ starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
 
 # Get the measurement XML
-xml <- getPsdMetrics(iris,"AK","PIN","","VEA",
-                          starttime,endtime,metricName="sample_mean",
-                          url="http://service.iris.edu/mustang/measurements/1/query?")
+psdDF <- getPsdMetrics(iris,"AK","PIN","","BHZ", starttime,endtime)
   }
 }
 

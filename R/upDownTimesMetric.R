@@ -73,7 +73,7 @@ upDownTimesMetric <- function(st, min_signal=30, min_gap=60) {
     } else {
       intSeconds <- as.integer(duration)
     }
-    m1 <- new("SingleValueMetric", snclq=snclq, starttime=upDownTimes[n], endtime=upDownTimes[n+1], metricName="channel_up_time", value=intSeconds)
+    m1 <- new("GeneralValueMetric", snclq=snclq, starttime=upDownTimes[n], endtime=upDownTimes[n+1], metricName="channel_up_time", elementNames=c("value"), elementValues=intSeconds)
     up_time <- append(up_time,m1)
   }
 

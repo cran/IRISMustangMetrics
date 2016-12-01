@@ -19,6 +19,8 @@
 ##    along with this program; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+utils::globalVariables(c('snclq','value'))
+
 ################################################################################
 # Method to save a list of Metric objects to disk.
 #
@@ -49,6 +51,8 @@ saveMetricList <- function(metricList,
     # Choose the appropriate data-to-XML conversion
     if (length(metricList) == 1 && class(metricList[[1]]) == "character") { # For latency which comes preformatted as XML
       xml <- metricList[[1]]
+    } else if (class(metricList[[1]]) == "GeneralValueMetric") {
+      xml <- metricList2Xml(metricList)
     } else if (class(metricList[[1]]) == "SingleValueMetric") {
       xml <- metricList2Xml(metricList)    
     } else if (class(metricList[[1]]) == "SpectrumMetric") {
@@ -59,8 +63,7 @@ saveMetricList <- function(metricList,
       stop(paste("saveMetricList: metric of class '",class(metricList[[1]]),"' is not recognized.",sep=""))
     }
     
-    result <- try( saveReturn <- write(file=filename,xml),
-                   silent=TRUE)
+    result <- try( saveReturn <- write(file=filename,xml,append=TRUE), silent=TRUE)
     if (class(result)[1] == "try-error" ) {
       stop(geterrmessage())      
     }
@@ -127,10 +130,10 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
   if (class(result) == "try-error" ) {
     
     err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,"Not Found")) {
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getBssMetricList.IrisClient: URL Not Found:",url))
     } else {
-      stop(paste("getBssMetricList.IrisClient:",err_msg))
+      stop(paste("getBssMetricList.IrisClient:",err_msg),url)
     } 
     
   }  
@@ -153,7 +156,6 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
       msg1 <- XML::xmlElementsByTagName(bssErrors[[1]])[[1]]
       err_msg <- paste("getBssMetricList:",XML::xmlValue(msg1))
       stop(err_msg)
-      ###MCRQuit(err_msg,"BSS_QUERY")
     }
     
     if (metricName == "up_down_times") {
@@ -176,7 +178,6 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
       if (length(XML::xmlChildren(doc)) > 1) {
         err_msg <- paste("getBssMetricList:  more than one MultipleTimeValueMetric in BSS response")
         stop(err_msg)
-        ###MCRQuit(err_msg,"BSS_QUERY")        
       }
       
       # Extract measurements attributes as a character matrix with one column for each measurement
@@ -188,7 +189,7 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
       metricList <- vector("list", ncol(attributeMatrix))
       
       # Convert information into MultipleTimeValueMetrics
-      # NOTE:  Should oly be one metric
+      # NOTE:  Should only be one metric
       for (i in seq(ncol(attributeMatrix))) {
         snclq <- attributeMatrix["target",i]
         starttime <- as.POSIXct(attributeMatrix["start",i], format="%Y-%m-%dT%H:%M:%OS", tz="GMT")
@@ -311,12 +312,12 @@ getMetricsXml.IrisClient <- function(obj, network, station, location, channel,
   if (class(result) == "try-error" ) {
     
     err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,"Not Found")) {
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getMetricsXml.IrisClient: URL Not Found:",url))
-    } else if (stringr::str_detect(err_msg,"couldn't connect to host")) {
-      stop(paste("getMetricsXml.IrisClient: couldn't connect to host"))
+    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getMetricsXml.IrisClient: Couldn't connect to host"),url)
     } else {
-      stop(paste("getMetricsXml.IrisClient:",err_msg))
+      stop(paste("getMetricsXml.IrisClient:",err_msg),url)
     } 
     
   }
@@ -391,12 +392,12 @@ getLatencyValuesXml.IrisClient <- function(obj, network, station, location, chan
   if (class(result) == "try-error" ) {
     
     err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,"Not Found")) {
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getLatencyValuesXml.IrisClient: URL Not Found:",url))
-    } else if (stringr::str_detect(err_msg,"couldn't connect to host")) {
-      stop(paste("getLatencyValuesXml.IrisClient: couldn't connect to host"))
+    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getLatencyValuesXml.IrisClient: Couldn't connect to host"),url)
     } else {
-      stop(paste("getLatencyValuesXml.IrisClient:",err_msg))
+      stop(paste("getLatencyValuesXml.IrisClient:",err_msg),url)
     } 
     
   }
@@ -432,7 +433,7 @@ setMethod("getLatencyValuesXml", signature(obj="IrisClient",
 # Exaple of getting single valued measurements output from the ''measurements' service:
 #
 # http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
-#       2013-06-02T00:00:00%20&output=text&metric=sample_mean,sample_min
+#       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
 
 if (!isGeneric("createBssUrl")) {
   setGeneric("createBssUrl", function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) {
@@ -472,7 +473,7 @@ createBssUrl.IrisClient <- function(obj, network, station, location, channel,
                  format(endtime,"%Y-%m-%dT%H:%M:%OS", tz="GMT"),sep="") # webservice requires "T" format
   }
   
-  url <- paste(url,"&output=text",sep="")
+  url <- paste(url,"&format=text",sep="")
   # metricName can be a comma-separated list of metric names
   url <- paste(url,"&metric=",metricName,sep="")
   
@@ -533,10 +534,13 @@ setMethod("createBssUrl", signature(obj="IrisClient",
 #
 # NOTE:  metricName can be a comma-separated list of metric names.
 #
-# Exaple of getting single valued measurements output from the ''measurements' service:
+# Example of getting single valued measurements output from the ''measurements' service:
+#
+# Single value metrics have output that is limited to "value","target","start","end","lddate". Metrics
+# that have other row names returned will not work correctly with this function.
 #
 # http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
-#       2013-06-02T00:00:00%20&output=text&metric=sample_mean,sample_min
+#       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
 #
 # "Sample Mean Metric"
 # "value","target","start","end","lddate"
@@ -557,6 +561,11 @@ if (!isGeneric("getSingleValueMetrics")) {
 getSingleValueMetrics.IrisClient <- function(obj, network, station, location, channel,
                                              starttime, endtime, metricName, constraint, url) {
   
+  # Sanity check
+  if (length(metricName) > 1) {
+    stop(paste('metricName should be a single string with comma separated metric names, not a vector of metric names.'))
+  }
+  
   # Create the BSS URL
   url <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)  
   
@@ -570,12 +579,13 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   if (class(result) == "try-error" ) {
     
     err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,"Not Found")) {
-      stop(paste("getSingleValueMetrics.IrisClient: URL Not Found:",url))
-    } else if (stringr::str_detect(err_msg,"couldn't connect to host")) {
-      stop(paste("getSingleValueMetrics.IrisClient: couldn't connect to host"))
-    } 
-    
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
+      stop(paste("getSingleValueMetrics.IrisClient: URL Not Found.",url))
+    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getSingleValueMetrics.IrisClient: Couldn't connect to host.",url))
+    } else {
+      stop(paste("getSingleValueMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url)) 
+    }
   } else {
     
     # Handle error messages coming directly from the BSS
@@ -595,13 +605,16 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   
   # NOTE:  The metrics will not necessarily be returned in the order requested.
   
-  # Metric names returned with output=text do not match the requested metric names
-  # NOTE:  Copy names from http://service.iris.edu/mustang/measurements/1
-  # NOTE:  and do 1 minutes of vim to generate this list.
+  # TODO:  Find alternate solution to hardcoded metric names.
+  
+  # Metric names returned with format=text do not match the requested metric names
+  # NOTE:  Copied names from http://service.iris.edu/mustang/measurements/1
+  # NOTE:  and did 1 minute of vim munging to generate this list.
   convertName <- list("Amplifier Saturation Metric"="amplifier_saturation",
                       "Calibration Signal Metric"="calibration_signal",
                       "Clock Locked Metric"="clock_locked",
                       "Data Latency Metric"="data_latency",
+                      "Dc Offset Metric"="dc_offset",
                       "DC Offset Times Metric"="dc_offset_times",
                       "Digital Filter Charging Metric"="digital_filter_charging",
                       "Digitizer Clipping Metric"="digitizer_clipping",
@@ -665,6 +678,12 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
       measurementName <- paste(shorterName,collapse="_")
     }
     
+    # Sanity check
+    if ( is.null(DF) || (nrow(DF) == 0) ) {
+      message(paste0('No measurements found for ',measurementName,'.'))
+      next
+    }
+    
     # Convert from BSS DF names to 'seismic' package standard naming
     names <- names(DF)
     for (i in seq(length(names))) {
@@ -710,10 +729,7 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
     dataframeList[[measurementName_DF]] <- DF
   }
   
-  # NOTE:  Previously, we just returned the list of dataframes
-  ###return(dataframeList)  
-  
-  # Now convert dataframeList into a 'tidy' dataframe appropriate for use with ggplot2
+  # Convert dataframeList into a 'tidy' dataframe appropriate for use with ggplot2
   
   # This function will be applied to each dataframe in DFList
   # Adds a "metricName" column and "value" column
@@ -778,17 +794,270 @@ setMethod("getSingleValueMetrics", signature(obj="IrisClient",
                                              starttime, endtime, metricName, "",
                                              "http://service.iris.edu/mustang/measurements/1/query?"))
 
+# getGeneralValueMetrics ---------------------------------------------------
+#
+# NOTE:  metricName can be a comma-separated list of metric names.
+#
+# Example of getting general valued measurements output from the ''measurements' service:
+#
+# http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&location=00&
+#       channel=BH[12Z]&timewindow=2016-08-29T00:00:00,2016-08-30T00:00:00&
+#       format=text&metric=sample_mean,orientation_check
+#
+#"Sample Mean Metric"
+#"value","target","start","end","lddate"
+#"-515529","IU.ANMO.00.BHZ.M","2016/08/29 00:00:00","2016/08/30 00:00:00","2016/08/31 18:52:54.283171"
+#"-737990","IU.ANMO.00.BH1.M","2016/08/29 00:00:00","2016/08/30 00:00:00","2016/08/31 18:51:19.142419"
+#"-557756","IU.ANMO.00.BH2.M","2016/08/29 00:00:00","2016/08/30 00:00:00","2016/08/31 18:52:07.134140"
+
+#"Orientation Check Metric"
+#"azimuth_R","backAzimuth","azimuth_Y_obs","azimuth_X_obs","azimuth_Y_meta","azimuth_X_meta","max_Czr","max_C_zr","magnitude","target","start","end","lddate"
+#"73.0000","90.6756","17.6756","107.676","18.0000","108.000","0.979605","0.747436","7.10","IU.ANMO.00.BHZ.M","2016/08/29 05:10:48","2016/08/29 05:21:08","2016/08/31 23:07:13.379066"
+
+if (!isGeneric("getGeneralValueMetrics")) {
+  setGeneric("getGeneralValueMetrics", function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) {
+    standardGeneric("getGeneralValueMetrics")
+  })
+}
+
+getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, channel,
+                                             starttime, endtime, metricName, constraint, url) {
+
+
+  # Sanity check
+  if (length(metricName) > 1) {
+    stop(paste('metricName should be a single string with comma separated metric names, not a vector of metric names.'))
+  }
+
+  # Create the BSS URL
+  url <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
+
+  # Get data from the measurements webservice
+  # NOTE:  RCurl::getURLContent returns a binary objected based on the "resulting HTTP  header's Content-Type field."
+  # NOTE:  Use RCurl::getURL to return data as character.
+  result <- try( measurementsText <- RCurl::getURL(url, useragent=obj@useragent),
+                 silent=TRUE)
+
+  # Handle error response
+  if (class(result) == "try-error" ) {
+
+    err_msg <- geterrmessage()
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
+      stop(paste("getGeneralValueMetrics.IrisClient: URL Not Found.",url))
+    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getGeneralValueMetrics.IrisClient: Couldn't connect to host.",url))
+    } else {
+      stop(paste("getGeneralValueMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url))
+    }
+  } else {
+    # Handle error messages coming directly from the BSS
+    # NOTE:  Encountered a situation where measurementsText had more than one element
+    lines <- unlist(stringr::str_split(measurementsText,"\\n"))
+    if ( stringr::str_detect(lines[1],"Exception") ) {
+      err_msg <- lines[2]
+      stop(paste("getGeneralValueMetrics.IrisClient:",err_msg))
+    }
+
+  }
+
+  # No errors so proceed
+
+  # Dataframes will be returned in a list
+  dataframeList <- list()
+
+  # NOTE:  The metrics will not necessarily be returned in the order requested.
+
+  # TODO:  Find alternate solution to hardcoded metric names.
+  # Metric names returned with format=text do not match the requested metric names
+  # NOTE:  Copied names from http://service.iris.edu/mustang/measurements/1
+  # NOTE:  and did 1 minute of vim munging to generate this list.
+  convertName <- list("Amplifier Saturation Metric"="amplifier_saturation",
+                      "Calibration Signal Metric"="calibration_signal",
+                      "Clock Locked Metric"="clock_locked",
+                      "Data Latency Metric"="data_latency",
+                      "Dc Offset Metric"="dc_offset",
+                      "DC Offset Times Metric"="dc_offset_times",
+                      "Digital Filter Charging Metric"="digital_filter_charging",
+                      "Digitizer Clipping Metric"="digitizer_clipping",
+                      "Event Begin Metric"="event_begin",
+                      "Event End Metric"="event_end",
+                      "Event In Progress Metric"="event_in_progress",
+                      "Feed Latency Metric"="feed_latency",
+                      "Glitches Metric"="glitches",
+                      "Max Gap Metric"="max_gap",
+                      "Max LTA/STA Metric"="max_ltasta",
+                      "Max Overlap Metric"="max_overlap",
+                      "Max STA/LTA Metric"="max_stalta",
+                      "Missing Padded Data Metric"="missing_padded_data",
+                      "Num Gaps Metric"="num_gaps",
+                      "Num Overlaps Metric"="num_overlaps",
+                      "Num Spikes Metric"="num_spikes",
+                      "Percent Availability Metric"="percent_availability",
+                      "PSD Metric"="psd",
+                      "Sample Max Metric"="sample_max",
+                      "Sample Mean Metric"="sample_mean",
+                      "Sample Median Metric"="sample_median",
+                      "Sample Min Metric"="sample_min",
+                      "Sample RMS"="sample_rms",
+                      "Sample SNR"="sample_snr",
+                      "Spikes Metric"="spikes",
+                      "Station Completeness Metric"="station_completeness",
+                      "Station Up Down Times Metric"="station_up_down_times",
+                      "Suspect Time Tag Metric"="suspect_time_tag",
+                      "Telemetry Sync Error Metric"="telemetry_sync_error",
+                      "Timing Correction Metric"="timing_correction",
+                      "Timing Quality Metric"="timing_quality",
+                      "Total Latency Metric"="total_latency",
+                      "Up Down Times Metric"="up_down_times")
+
+  # Break the text into chunks separated by "\n\n".
+  # NOTE:  stringr::str_split uses extended regular expressions and '\' needs to be escaped
+  chunks <- unlist(stringr::str_split(measurementsText,"\\n\\n"))
+
+  # length of chunks represents the number of metrics represented
+  for (i in seq(length(chunks))) {
+
+    # Create a dataframe from the text
+    DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i])
+
+    # Get metric name from first line of chunk
+    lines <- unlist(stringr::str_split(chunks[i],"\\n"))
+    bssName <- stringr::str_replace_all(lines[1],'"','')
+    measurementName <- convertName[[bssName]]
+
+    # REC
+    # if there is no measurementName found in the convertName list, let's take the metric
+    # name that is the header line for this chunk and convert it to the BSS metric name.
+    if (length(measurementName) == 0) {
+      # split text components on space
+      splitNameList <- strsplit(bssName,"[[:blank:]]")
+      # convert text to lower case
+      toLowerNameList <- unlist(lapply(splitNameList,tolower))
+      # remove the last term ('metric')
+      shorterName <- toLowerNameList[-(length(toLowerNameList))]
+      # join text with underscores
+      measurementName <- paste(shorterName,collapse="_")
+    }
+    # Sanity check
+    if ( is.null(DF) || (nrow(DF) == 0) ) {
+      message(paste0('No measurements found for ',measurementName,'.'))
+      next
+    }
+
+    # Convert from BSS DF names to 'seismic' package standard naming
+    names <- names(DF)
+    for (i in seq(length(names))) {
+      if (names[i] == 'target') {
+        names[i] <- "snclq"
+      } else if (names[i] == 'start') {
+        names[i] <- "starttime"
+      } else if (names[i] == 'end') {
+        names[i] <- "endtime"
+      } else if (names[i] == 'lddate') {
+        names[i] <- "loadtime"
+      }
+    }
+    names(DF) <- names
+
+    # Convert time strings
+    DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
+    DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
+    DF$loadtime <- as.POSIXct(DF$loadtime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
+
+    # NOTE:  The database was originally populated with a version of this package
+    # NOTE:  that always assigned quality to be 'B'. Later versions obtained the
+    # NOTE:  quality from the miniSEED packet (typically 'M').  Because of this
+    # NOTE:  it is possible to have duplicate entries that only differ in the Q
+    # NOTE:  part of their snclq.  To avoid double counting, we need to remove
+    # NOTE:  duplicates when the only difference is 'B'/'M'.
+
+    # Reorder rows to be in temporal order by reverse loadtime -- most recent first
+    DF <- DF[order(DF$loadtime,decreasing=TRUE),]
+
+    # Create a uniqueId that does not use quality by first removing the Q part of N.S.L.C.Q
+    sncl <- stringr::str_replace(DF$snclq,"\\.[A-Z]$","")
+    uniqueId <- paste(sncl,format(DF$starttime,"%Y%m%d"),format(DF$endtime,"%Y%m%d"),sep='.')
+
+    # Remove any rows which share a duplicate uniqueId (older loadtime, i.e. quality='B')
+    DF <- DF[!duplicated(uniqueId),]
+
+    # add row with measurementName
+    metricName <- rep(measurementName, nrow(DF))
+    DF <- cbind(metricName,DF, stringsAsFactors=FALSE)
+
+    # Reorder rows to be in temporal order by starttime
+    DF <- DF[order(DF$starttime),]
+    measurementName_DF <- paste(measurementName,"DF",sep="_")
+    dataframeList[[measurementName_DF]] <- DF
+  }
+
+  # Combine dataframeList into one dataframe
+  BigDF <- suppressMessages(Reduce(dplyr::full_join,dataframeList))
+  BigDF <- BigDF[order(BigDF$metricName,BigDF$starttime),]
+  BigDF <- BigDF %>% dplyr::select(metricName, snclq, value, starttime, endtime, seq_along())
+  return(BigDF)
+}
+
+# All arguments specified
+setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
+                                             network="character", location="character", station="character",
+                                             channel="character",starttime="POSIXct", endtime="POSIXct",
+                                             metricName="character", constraint="character", url="character"),
+          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
+            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel, starttime, endtime,
+                                             metricName, constraint, url))
+# url="missing"
+setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
+                                             network="character", location="character", station="character",
+                                             channel="character",starttime="POSIXct", endtime="POSIXct",
+                                             metricName="character", constraint="character", url="missing"),
+          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
+            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
+                                             starttime, endtime, metricName, constraint,
+                                             "http://service.iris.edu/mustang/measurements/1/query?"))
+
+# constraint="missing"
+setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
+                                             network="character", location="character", station="character",
+                                             channel="character",starttime="POSIXct", endtime="POSIXct",
+                                             metricName="character", constraint="missing", url="character"),
+          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
+            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
+                                             starttime, endtime, metricName, "", url))
+
+
+# constraint="missing", url="missing"
+setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
+                                             network="character", location="character", station="character",
+                                             channel="character",starttime="POSIXct", endtime="POSIXct",
+                                             metricName="character", constraint="missing", url="missing"),
+          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
+            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
+                                             starttime, endtime, metricName, "",
+                                             "http://service.iris.edu/mustang/measurements/1/query?"))
+
 # getPsdMetrics -----------------------------------------------------------
 #
-# Exaple of getting PSD output from the 'measurements' service
+# Example of getting PSD output from the 'measurements' service
 #
-# http://service.iris.edu/mustang/measurements/1/query?metric=psd&net=IU&sta=ANMO&cha=BHZ&loc=00&output=tex&timewindow=2013-05-01T00:00:00,2013-05-01T01:00:00
+# http://service.iris.edu/mustang/noise-psd/1/query?net=IU&sta=ANMO&cha=BHZ&loc=00&quality=M&starttime=2013-05-01T00:00:00&endtime=2013-05-01T01:00:00&format=xml
 #
-# "PSD Metric"
-# "target","start","end","f","a","p"
-# "IU.ANMO.00.BHZ.M","2013/05/01 00:30:00","2013/05/01 01:30:00","10","-15.254799999999999","0"
-# "IU.ANMO.00.BHZ.M","2013/05/01 00:30:00","2013/05/01 01:30:00","9.1700400000000002","-14.224399999999999","0"
-# "IU.ANMO.00.BHZ.M","2013/05/01 00:30:00","2013/05/01 01:30:00","8.4089600000000004","-13.209199999999999","0"
+#<PsdRoot>
+#<Created>2016-09-23T20:50:36.661Z</Created>
+#<RequestedDateRange>
+#<Start>2013-05-01T00:00:00.000Z</Start>
+#<End>2013-05-01T01:00:00.000Z</End>
+#</RequestedDateRange>
+#<AnalyzedDateRange>
+#<Start>2013-05-01T00:00:00.000Z</Start>
+#<End>2013-05-01T02:00:00.000Z</End>
+#</AnalyzedDateRange>
+#<Psds>
+#<Psd target="IU.ANMO.00.BHZ.M" start="2013-05-01T00:00:00.000Z" end="2013-05-01T01:00:00.000Z">
+#<value freq="0.0052556" power="-174.1390637788908"/>
+#<value freq="0.00573128" power="-174.01815949029867"/>
+#<value freq="0.00625" power="-174.86542709483024"/>
+#<value freq="0.00681567" power="-174.69764082822218"/>
 # ... ... through all frequencies
 # ... repeated for each hour long chunk
 
@@ -800,47 +1069,43 @@ if (!isGeneric("getPsdMetrics")) {
 
 getPsdMetrics.IrisClient <- function(obj, network, station, location, channel, starttime, endtime, url) {
   
-  # TODO:  Sanity check for arguments
-  
+  if (location == "") {
+    location <- "--"
+  }
+
   # Create the BSS URL
-  url <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName="psd", url=url)  
+  url <- paste0(url,"net=",network,"&sta=",station,"&loc=",location,"&cha=",channel,"&starttime=",starttime,"&endtime=",endtime,"&quality=M&format=xml")
   
-  # Read the data directly from the URL with utils::read.csv
-  
-  colNames <- c("target","starttime","endtime","frequency","amplitude","phase")
-  
-  # REC -- modify this call to make use of RCurl
-  #result <- try( DF <- utils::read.csv(url, header=FALSE, skip=2, col.names=colNames, stringsAsFactors=FALSE),
-  #               silent=TRUE )
-  result <- try( DF <- utils::read.csv(textConnection(RCurl::getURL(url,useragent=obj@useragent)), header=FALSE, skip=2, col.names=colNames, stringsAsFactors=FALSE),
-                 silent=TRUE )
+  # Read the data directly from the URL 
+  result <- try( psdXml <- RCurl::getURL(url, useragent=obj@useragent), silent=TRUE)
   
   # Handle error response
   if (class(result) == "try-error" ) {
     
     err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,"Not Found")) {
+    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getPsdMetrics.IrisClient: URL Not Found:",url))
-    } else if (stringr::str_detect(err_msg,"couldn't connect to host")) {
-      stop(paste("getPsdMetrics.IrisClient: couldn't connect to host"))
+    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getPsdMetrics.IrisClient: Couldn't connect to host"),url)
     } else {
-      stop(paste("getPsdMetrics.IrisClient:",err_msg))
+      stop(paste("getPsdMetrics.IrisClient:",err_msg, url))
     } 
     
   }
   
   # No errors so proceed
+  docP <- XML::xmlTreeParse(psdXml, useInternalNodes=TRUE)
+  nodesP <- XML::getNodeSet(docP,"//Psd")
   
-  # NOTE:  Using 'output=text' returns non-ISO datetimes instead of the ISO 
-  # NOTE:  datetimes returned when 'output=xml'.
-  
-  # Convert time strings
-  DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
-  DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
-  
-  # Convert phase from integer to numeric
-  DF$phase <- as.numeric(DF$phase)
-  
+  DFList <- lapply(nodesP, function(x) {
+                         freq <- sapply(XML::getNodeSet(x,"value"), function(z) as.numeric(XML::xmlGetAttr(z,"freq")))
+                         power <- sapply(XML::getNodeSet(x,"value"), function(z) as.numeric(XML::xmlGetAttr(z,"power")))
+                         target <- rep(XML::xmlGetAttr(x,"target"),length(freq))
+                         start <- rep(as.POSIXct(XML::xmlGetAttr(x,"start"),format="%Y-%m-%dT%H:%M:%OSZ"),length(freq))
+                         end <- rep(as.POSIXct(XML::xmlGetAttr(x,"end"),format="%Y-%m-%dT%H:%M:%OSZ"),length(freq))
+                         dplyr::data_frame(target, start, end, freq, power)
+                      })
+  DF <- do.call(rbind,DFList)
   return(DF)
 }
 
@@ -858,6 +1123,6 @@ setMethod("getPsdMetrics", signature(obj="IrisClient",
                                      url="missing"), 
           function(obj, network, station, location, channel, starttime, endtime, url) 
             getPsdMetrics.IrisClient(obj, network, station, location, channel, starttime, endtime,
-                                     url="http://service.iris.edu/mustang/measurements/1/query?"))
+                                     url="http://service.iris.edu/mustang/noise-psd/1/query?"))
 
 

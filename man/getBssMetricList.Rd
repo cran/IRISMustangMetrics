@@ -42,7 +42,7 @@ A list of \code{_Metric} objects is returned.
 %% \references{ }
 
 \author{
-Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 %% \note{ }
@@ -58,8 +58,8 @@ Jonathan Callahan \email{jonathan.s.callahan@gmail.com}
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
-starttime <- as.POSIXct("2012-01-24", tz="GMT")
-endtime <- as.POSIXct("2012-01-25", tz="GMT")
+starttime <- as.POSIXct("2014-01-24", tz="GMT")
+endtime <- as.POSIXct("2014-01-25", tz="GMT")
 
 # Get the metricList
 metricList <- getBssMetricList(iris,"AK","PIN","","",starttime,endtime,

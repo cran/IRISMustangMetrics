@@ -4,6 +4,7 @@
 
 import(methods)     # for methods used in defining S4 classes
 import(IRISSeismic) #
+import(stringr)
 
 ############################################################
 # Export S4 classes 
@@ -16,7 +17,7 @@ import(IRISSeismic) #
 
 exportClasses(
   "MultipleTimeValueMetric",
-  "MultipleValueMetric",
+  "GeneralValueMetric",
   "SingleValueMetric",
   "SpectrumMetric"
 )
@@ -29,10 +30,10 @@ exportClasses(
 exportMethods(
   "createBssUrl",
   "getBssMetricList",
-  "getLatencyValuesXml",
   "getMetricsXml",
-  "getPsdMetrics",
-  "getSingleValueMetrics"
+  "getSingleValueMetrics",
+  "getGeneralValueMetrics",
+  "getPsdMetrics"
 )
 
 ############################################################
@@ -45,6 +46,7 @@ exportMethods(
 ############################################################
 
 # from Class-Metric
+export("metricList2DF")
 export("metricList2DFList")
 export("metricList2Xml")
 export("spectrumMetric2Xml")
@@ -52,6 +54,8 @@ export("timesMetric2Xml")
 # from BSSUtils
 export("saveMetricList")
 export("convertBssErrors")
+# from ISPAQUtils
+export("getMetricFunctionMetadata")
 # from metrics
 export("basicStatsMetric")
 export("crossCorrelationMetric")
