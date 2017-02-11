@@ -53,28 +53,4 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 \code{\link{metricList2Xml}}
 }
 
-\examples{
-  \dontrun{
-# Open a connection to IRIS DMC webservices
-client <- new("IrisClient")
-
-# Get the waveforms
-starttime <- as.POSIXct("2012-01-24", tz="GMT")
-endtime <- as.POSIXct("2012-01-25", tz="GMT")
-st1 <- getDataselect(client,"AK","PIN","","BHE",starttime,endtime)
-st2 <- getDataselect(client,"AK","PIN","","BHN",starttime,endtime)
-st3 <- getDataselect(client,"AK","PIN","","BHZ",starttime,endtime)
-
-# Calculate metrics and append them to the metricList
-metricList <- stateOfHealthMetric(st)
-metricList <- append(metricList, basicStatsMetric(st1))
-metricList <- append(metricList, basicStatsMetric(st2))
-metricList <- append(metricList, basicStatsMetric(st3))
-
-# Create dataframe
-metricDFList <- metricList2DFList(metricList)
-names(metricDFList)
-head(metricDFList[["sample_max_DF"]])
-  }
-}
 

@@ -44,5 +44,4 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 \code{\link{getBssMetricList}},
 }
 
-%% \examples{ }
 

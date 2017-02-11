@@ -59,7 +59,6 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 %% max preformatted length ---------------------------------------------------
 \examples{
-  \dontrun{
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
@@ -72,7 +71,6 @@ url <- createBssUrl(iris,"IU","ANMO","00","BHZ",
                     starttime,endtime,metricName)
 
 # This URL can be pasted into a web browser to see the BSS return values
-  }
 }
 
 \keyword{ webservices }

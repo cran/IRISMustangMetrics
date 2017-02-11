@@ -56,8 +56,8 @@ SNRMetric <- function(st, algorithm="splitWindow", windowSecs=60) {
 
     to <- starttime + as.numeric(difftime(endtime, starttime, units="sec")) / 2
     
-    trN <- slice(tr, to-windowSecs/2, to)
-    trS <- slice(tr, to, to+windowSecs/2)
+    trN <- IRISSeismic::slice(tr, to-windowSecs/2, to)
+    trS <- IRISSeismic::slice(tr, to, to+windowSecs/2)
     snr <- rmsVariance(trS) / rmsVariance(trN)
     
   } else if (algorithm == "staltaTrigger") {
@@ -76,8 +76,8 @@ SNRMetric <- function(st, algorithm="splitWindow", windowSecs=60) {
     picker <- STALTA(tr,staSecs,ltaSecs,"classic_LR")
     to <- triggerOnset(tr,picker)
     
-    trN <- slice(tr, to-windowSecs/2, to)
-    trS <- slice(tr, to, to+windowSecs/2)
+    trN <- IRISSeismic::slice(tr, to-windowSecs/2, to)
+    trS <- IRISSeismic::slice(tr, to, to+windowSecs/2)
     snr <- rmsVariance(trS) / rmsVariance(trN)
     
   }

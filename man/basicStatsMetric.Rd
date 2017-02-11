@@ -69,7 +69,7 @@ st <- getDataselect(iris,"AK","PIN","","BHZ",starttime,endtime, inclusiveEnd=FAL
 # Calculate some metrics and show the results
 metricList <- basicStatsMetric(st)
 dummy <- lapply(metricList, show)
-   }
+  }
 }
 
 \keyword{metrics}

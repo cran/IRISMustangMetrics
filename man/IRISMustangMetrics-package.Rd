@@ -28,6 +28,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.0.4
+  \itemize{
+   \item{adds additional sanity check to \code{getGeneralValueMetrics()}.}
+   \item{createBssUrl() adds "&nodata=404" to url}
+  }
+
   version 2.0.2
   \itemize{
    \item{updates to ISPAQUtils.R}
@@ -162,7 +168,6 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 %% \seealso{ }
 
 \examples{
-  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient", debug=TRUE)
 
@@ -174,7 +179,6 @@ st <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime)
 # Apply a metric and show the results
 metricList <- basicStatsMetric(st)
 dummy <- lapply(metricList, show)
-  }
 }
 
 %% Optional keywords

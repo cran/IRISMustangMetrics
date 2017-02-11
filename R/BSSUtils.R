@@ -19,7 +19,7 @@
 ##    along with this program; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-utils::globalVariables(c('snclq','value'))
+utils::globalVariables(c('snclq','value','everything'))
 
 ################################################################################
 # Method to save a list of Metric objects to disk.
@@ -430,7 +430,7 @@ setMethod("getLatencyValuesXml", signature(obj="IrisClient",
 #
 # Create the URL needed to access data from the MUSTANG BSS
 #
-# Exaple of getting single valued measurements output from the ''measurements' service:
+# Example of getting single valued measurements output from the ''measurements' service:
 #
 # http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
 #       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
@@ -481,7 +481,9 @@ createBssUrl.IrisClient <- function(obj, network, station, location, channel,
   if (constraint != "" && constraint != "intersects") {
     url <- paste(url,"&",constraint,sep="")    
   }
-  
+
+  url <- paste(url,"&nodata=404",sep="")
+
   if (obj@debug) {
     write(paste("URL =",url), stdout())
   }
@@ -596,6 +598,10 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
       stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
     }
     
+  }
+
+  if(nchar(measurementsText)==0){
+    stop(paste("getSingleValueMetrics.IrisClient found no measurements for",metricName))
   }
   
   # No errors so proceed
@@ -729,6 +735,10 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
     dataframeList[[measurementName_DF]] <- DF
   }
   
+  if(length(dataframeList)==0){
+     return(NULL)
+  }
+
   # Convert dataframeList into a 'tidy' dataframe appropriate for use with ggplot2
   
   # This function will be applied to each dataframe in DFList
@@ -823,7 +833,6 @@ if (!isGeneric("getGeneralValueMetrics")) {
 getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, channel,
                                              starttime, endtime, metricName, constraint, url) {
 
-
   # Sanity check
   if (length(metricName) > 1) {
     stop(paste('metricName should be a single string with comma separated metric names, not a vector of metric names.'))
@@ -840,7 +849,6 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
 
   # Handle error response
   if (class(result) == "try-error" ) {
-
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getGeneralValueMetrics.IrisClient: URL Not Found.",url))
@@ -853,13 +861,12 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     # Handle error messages coming directly from the BSS
     # NOTE:  Encountered a situation where measurementsText had more than one element
     lines <- unlist(stringr::str_split(measurementsText,"\\n"))
-    if ( stringr::str_detect(lines[1],"Exception") ) {
-      err_msg <- lines[2]
+    if (stringr::str_detect(lines[1],"Exception") ) {
+      err_msg <- lines[1]
       stop(paste("getGeneralValueMetrics.IrisClient:",err_msg))
-    }
-
+    } 
   }
-
+ 
   # No errors so proceed
 
   # Dataframes will be returned in a list
@@ -938,11 +945,6 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
       # join text with underscores
       measurementName <- paste(shorterName,collapse="_")
     }
-    # Sanity check
-    if ( is.null(DF) || (nrow(DF) == 0) ) {
-      message(paste0('No measurements found for ',measurementName,'.'))
-      next
-    }
 
     # Convert from BSS DF names to 'seismic' package standard naming
     names <- names(DF)
@@ -958,6 +960,11 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
       }
     }
     names(DF) <- names
+
+    if ( is.null(DF) || (nrow(DF) == 0) ) {
+      message(paste0('No measurements found for ',measurementName,'.'))
+      next
+    } 
 
     # Convert time strings
     DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
@@ -989,13 +996,22 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     DF <- DF[order(DF$starttime),]
     measurementName_DF <- paste(measurementName,"DF",sep="_")
     dataframeList[[measurementName_DF]] <- DF
+
   }
 
-  # Combine dataframeList into one dataframe
-  BigDF <- suppressMessages(Reduce(dplyr::full_join,dataframeList))
-  BigDF <- BigDF[order(BigDF$metricName,BigDF$starttime),]
-  BigDF <- BigDF %>% dplyr::select(metricName, snclq, value, starttime, endtime, seq_along())
-  return(BigDF)
+  if(length(dataframeList)==0){  # return NULL if no results returned for any metric
+     return(NULL)
+  } else {
+     # Combine dataframeList into one dataframe
+     BigDF <- suppressMessages(Reduce(dplyr::full_join,dataframeList))
+     BigDF <- BigDF[order(BigDF$metricName,BigDF$starttime),]
+     if ("value" %in% names(BigDF)) {
+        BigDF <- BigDF %>% dplyr::select(metricName, snclq, value, starttime, endtime, everything())
+     } else {
+        BigDF <- BigDF %>% dplyr::select(metricName, snclq, starttime, endtime, everything())
+     }
+     return(BigDF)
+  }
 }
 
 # All arguments specified

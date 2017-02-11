@@ -60,7 +60,6 @@ The metricList generated for this two-channel metric will have an additional \co
 %% \seealso{ }
 
 \examples{
-  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
@@ -72,7 +71,6 @@ st2 <- getSNCL(iris,"NM.SLM.00.BHZ",starttime+3,endtime+3)
 
 # Cross-correlate
 crossCorrelationMetric(st1,st2)
-  }
 }
 
 \keyword{metrics}

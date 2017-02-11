@@ -58,7 +58,6 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \examples{
-  \dontrun{
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
@@ -69,7 +68,6 @@ endtime <- as.POSIXct("2012-01-25", tz="GMT")
 xml <- getMetricsXml(iris,"AK","PIN","","BHZ",
                           starttime,endtime,metricName="sample_mean",
                           url="http://service.iris.edu/mustang/measurements/1/query?")
-  }
 }
 
 \keyword{ webservices }

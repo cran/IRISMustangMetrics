@@ -62,6 +62,5 @@ After initial testing on stations in the IU network, a metric value > 10 appears
 \code{\link{getSingleValueMetrics}}
 }
 
-%% \examples{}
 
 \keyword{metrics}

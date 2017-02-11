@@ -59,7 +59,7 @@ st2 <- getDataselect(client,"AK","PIN","","BHN",starttime,endtime)
 st3 <- getDataselect(client,"AK","PIN","","BHZ",starttime,endtime)
 
 # Calculate metrics and append them to the metricList
-metricList <- stateOfHealthMetric(st)
+metricList <- stateOfHealthMetric(st1)
 metricList <- append(metricList, basicStatsMetric(st1))
 metricList <- append(metricList, basicStatsMetric(st2))
 metricList <- append(metricList, basicStatsMetric(st3))

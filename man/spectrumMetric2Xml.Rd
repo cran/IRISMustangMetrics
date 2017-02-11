@@ -57,7 +57,7 @@ if (length(unique_ids) > 1) {
 snclq <- unique_ids[1]
 
 # Calculate and plot the Power Spectral Density
-psd <- psdList(st)
+psdList <- psdList(st)
   
 # Create a Spectrum metric list
 spectrumMetricList <- list()

@@ -3,8 +3,9 @@
 ############################################################
 
 import(methods)     # for methods used in defining S4 classes
-import(IRISSeismic) #
+import(IRISSeismic) 
 import(stringr)
+importFrom(dplyr,everything)
 
 ############################################################
 # Export S4 classes 

@@ -82,6 +82,5 @@ processing of a particular metric.  Its meaning will vary from metric to metric.
 
 %% \seealso{ }
 
-%% \examples{ }
 
 \keyword{classes}

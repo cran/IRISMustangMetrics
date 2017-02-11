@@ -64,7 +64,6 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 %% \seealso{ }
 
 \examples{
-  \dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
@@ -77,7 +76,6 @@ tr <- st@traces[[1]]
 # Calculate the SNR metric and show the results
 metricList <- SNRMetric(st)
 dummy <- lapply(metricList, show)
-  }
 }
 
 \keyword{metrics}
