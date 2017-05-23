@@ -28,6 +28,27 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.0.8
+  \itemize{
+   \item{minor bug fix to ISPAQUtils.R, spikes=numSpikes}
+  }
+
+  version 2.0.7
+  \itemize{
+   \item{fixed bug in getGeneralValueMetrics that didn't return measurements if there was more than one for any day}
+   \item{crossCorrelationMetric filter now defaults to a butterworth 2 pole 0.1Hz (10 second) low pass filter}
+  }
+
+  version 2.0.6
+  \itemize{
+   \item{fixed bug related to NA -> NULL replacement in Class-Metric}
+  }
+
+  version 2.0.5
+  \itemize{
+   \item{fixed dplyr version dependencies}
+  }
+
   version 2.0.4
   \itemize{
    \item{adds additional sanity check to \code{getGeneralValueMetrics()}.}

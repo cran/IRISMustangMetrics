@@ -154,7 +154,9 @@ setMethod("initialize", "SingleValueMetric",
             }
             
             # Convert missing value from R style to BSS style
-            .Object@valueString <- stringr::str_replace(.Object@valueString,"NA","NULL")
+            if (.Object@valueString == "NA"){
+                .Object@valueString <- "NULL"
+            }
             
             # Set the quality_flagString using BSS style missing value
             .Object@quality_flagString <- as.character(.Object@quality_flag)
@@ -227,7 +229,7 @@ setClass("GeneralValueMetric",
                    quality_flagString = "-9")
 )
 
-# initialze method
+# initialize method
 setMethod("initialize", "GeneralValueMetric",
           function(.Object, snclq, starttime, endtime, metricName, elementNames, elementValues, valueStrings, quality_flag, ...) {
             
@@ -249,7 +251,7 @@ setMethod("initialize", "GeneralValueMetric",
             }
             
             # Convert missing value from R style to BSS style
-            .Object@valueStrings <- stringr::str_replace(.Object@valueStrings,"NA","NULL")
+            .Object@valueStrings <- as.vector(sapply(.Object@valueStrings, function(x) if (x == "NA") { x <- "NULL" } else { x <- x } ))
             
             # Set the quality_flag if it is passed in
             if (!missing(quality_flag)) {

@@ -881,6 +881,7 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
   convertName <- list("Amplifier Saturation Metric"="amplifier_saturation",
                       "Calibration Signal Metric"="calibration_signal",
                       "Clock Locked Metric"="clock_locked",
+                      "Cross Talk Metric"="cross_talk",
                       "Data Latency Metric"="data_latency",
                       "Dc Offset Metric"="dc_offset",
                       "DC Offset Times Metric"="dc_offset_times",
@@ -983,7 +984,7 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
 
     # Create a uniqueId that does not use quality by first removing the Q part of N.S.L.C.Q
     sncl <- stringr::str_replace(DF$snclq,"\\.[A-Z]$","")
-    uniqueId <- paste(sncl,format(DF$starttime,"%Y%m%d"),format(DF$endtime,"%Y%m%d"),sep='.')
+    uniqueId <- paste(sncl,format(DF$starttime,"%Y%m%d%H%M"),format(DF$endtime,"%Y%m%d%H%M"),sep='.')
 
     # Remove any rows which share a duplicate uniqueId (older loadtime, i.e. quality='B')
     DF <- DF[!duplicated(uniqueId),]
@@ -1006,9 +1007,9 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
      BigDF <- suppressMessages(Reduce(dplyr::full_join,dataframeList))
      BigDF <- BigDF[order(BigDF$metricName,BigDF$starttime),]
      if ("value" %in% names(BigDF)) {
-        BigDF <- BigDF %>% dplyr::select(metricName, snclq, value, starttime, endtime, everything())
+           BigDF <- BigDF %>% dplyr::select(metricName, snclq, value, starttime, endtime, everything())
      } else {
-        BigDF <- BigDF %>% dplyr::select(metricName, snclq, starttime, endtime, everything())
+           BigDF <- BigDF %>% dplyr::select(metricName, snclq, starttime, endtime, everything())
      }
      return(BigDF)
   }

@@ -35,13 +35,15 @@
 #            neighbor SNCL name
 #            largest absolute correlation function value (with origin sign) - we can call this peak_correlation
 #            adjusted lag - we can call this peak_lag
-
-### REC May 2014 -- we are now mapping the two measurements to the following metrics names
 #
 # peak_correlation --> polarity_check
-# peak_lag --> timing_drift
+#
+# argument "filter" is the expected input to signal::filter 
+# if "filter" is not specified in arguments, then it defaults to a butterworth 2 pole 0.1Hz (10 second) low pass filter
+# 
+####################
 
-crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butter(2,0.2)) {
+crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter) {
   
   #-----------------------------------------------------------------------------
   # Sanity checks and data resampling
@@ -60,12 +62,12 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   tr2 <- DDT(st2@traces[[1]],TRUE,TRUE,0)
   
   # Sanity check sampling rates
-  #if (tr1@stats@sampling_rate < 1) {
-  #  stop(paste("crossCorrelationMetric:",tr1@id,"has a sampling_rate < 1."))
-  #}
-  #if (tr2@stats@sampling_rate < 1) {
-  #  stop(paste("crossCorrelationMetric:",tr2@id,"has a sampling_rate < 1."))
-  #}
+  if (tr1@stats@sampling_rate < 0.05) {
+    stop(paste("crossCorrelationMetric:",tr1@id,"has a sampling_rate < 0.05."))
+  }
+  if (tr2@stats@sampling_rate < 0.05) {
+    stop(paste("crossCorrelationMetric:",tr2@id,"has a sampling_rate < 0.05."))
+  }
   
   # Deal with potentially different sampling rates
   if (tr1@stats@sampling_rate < 1 || tr2@stats@sampling_rate < 1 ) {
@@ -120,6 +122,13 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   # Whew! Sanity checks are done. Now on to the metrics calculations.
   #-----------------------------------------------------------------------------
   
+  # create low pass 2-pole filter with 10 second (0.1 Hz) corner frequency
+  nyquist <- sampling_rate/2
+  W <- 0.1/nyquist
+  if(missing(filter)){
+     filter <- signal::butter(2,W) 
+  }
+
   # Apply low pass (or other) filter
   d1 <- signal::filter(filter,d1)
   d2 <- signal::filter(filter,d2)
@@ -142,13 +151,6 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter=signal::butte
   peak_lag <- lagPoints * 1/sampling_rate
   
   # Create and return metrics
-  #m1 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime, 
-  #          metricName="polarity_check", value=peak_correlation,
-  #          attributeName="snclq2", attributeValueString=tr2@id)
-  #m2 <- new("SingleValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime,
-  #          metricName="timing_drift", value=peak_lag,
-  #          attributeName="snclq2", attributeValueString=tr2@id)
-
   m1 <- new("GeneralValueMetric", snclq=tr1@id, starttime=tr1@stats@starttime, endtime=tr1@stats@endtime,
             metricName="polarity_check", elementNames=c("value","snclq2"), elementValues=c(peak_correlation,tr2@id),
             valueStrings=c(format(peak_correlation,digits=7),tr2@id))

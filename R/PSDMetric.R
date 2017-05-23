@@ -209,23 +209,23 @@ PSDMetric <- function(st,
       starttime <- st@traces[[1]]@stats@starttime
       endtime <- st@traces[[length(st@traces)]]@stats@endtime
       
-      if (is.numeric(avg_pct_above)) {
+      if (is.numeric(avg_pct_above) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
               m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_above_nhnm", elementNames=c("value"), elementValues=avg_pct_above)
 	      svMetricList <- append(svMetricList,list(m1))
       }
-      if(is.numeric(avg_pct_below)) {
+      if(is.numeric(avg_pct_below) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
               m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
 	      svMetricList <- append(svMetricList,list(m2))
       }
-      if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH") ) {
+      if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|BX|HX") ) {
               m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_exp", elementNames=c("value"), elementValues=dead_channel_exp)
 	      svMetricList <- append(svMetricList,list(m3))
       }
-      if(is.numeric(dead_channel_lin) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH")) {
+      if(is.numeric(dead_channel_lin) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|BX|HX")) {
               m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_lin", elementNames=c("value"), elementValues=dead_channel_lin)
 	      svMetricList <- append(svMetricList,list(m4))
       }
-      if(is.numeric(dead_channel_gsn)) {
+      if(is.numeric(dead_channel_gsn) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
               m5 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_gsn", elementNames=c("value"), elementValues=dead_channel_gsn)
 	      svMetricList <- append(svMetricList,list(m5))
       }
@@ -234,24 +234,12 @@ PSDMetric <- function(st,
       startlist <- do.call("c",lapply(psdList,`[[`,"starttime"))
       endlist <- do.call("c",lapply(psdList,`[[`,"endtime"))
 
-      #cPsdDF <- data.frame(startlist,endlist,psdStats$noiseMatrix)
-      #colnames(cPsdDF) <- c("starttime","endtime",psdStats$freq)
-      #cPsdDF <- tidyr::gather(cPsdDF,"freq","power",-starttime,-endtime)
-      #cPsdDF$freq <- as.numeric(cPsdDF$freq)
-      #cPsdDF <- dplyr::arrange(cPsdDF,starttime,freq)
-
       freqV <- rep(psdStats$freq,nrow(psdStats$noiseMatrix))
       powerV <- as.vector(t(psdStats$noiseMatrix))
       startV <- rep(startlist, rep(ncol(psdStats$noiseMatrix),length(startlist)))
       endV <- rep(endlist, rep(ncol(psdStats$noiseMatrix),length(endlist)))
       cPsdDF <- data.frame(startV, endV, freqV, powerV)
       colnames(cPsdDF) <- c("starttime","endtime","freq","power")
-
-      # create a PDF data frame similar to that returned by http://services.iris.edu/mustang/noise-pdf/1/
-      #pdfDF <- data.frame(psdStats$pdfMatrix,psdStats$pdfBins)
-      #colnames(pdfDF) <- c(psdStats$freq,"power")
-      #pdfDF <- tidyr::gather(pdfDF,"freq","hits",-power) %>% dplyr::filter(hits>0) %>% dplyr::select(freq,power,hits)
-      #pdfDF$freq <- as.numeric(pdfDF$freq)
 
       hitsV <- as.vector(psdStats$pdfMatrix)
       binV <- rep(psdStats$pdfBins,ncol(psdStats$pdfMatrix))

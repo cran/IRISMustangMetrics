@@ -3,9 +3,11 @@
 ############################################################
 
 import(methods)     # for methods used in defining S4 classes
-import(IRISSeismic) 
+import(IRISSeismic)
 import(stringr)
-importFrom(dplyr,everything)
+if(utils::packageVersion("dplyr") >= "0.5.0"){
+  importFrom(dplyr,everything)
+}
 
 ############################################################
 # Export S4 classes 

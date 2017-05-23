@@ -187,7 +187,7 @@ getMetricFunctionMetadata <- function() {
       "streamCount": 2, 
       "speed": "fast"
     }, 
-    "spikes": {
+    "numSpikes": {
       "businessLogic": "simple", 
       "fullDay": true, 
       "outputType": "GeneralValue", 
