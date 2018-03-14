@@ -104,18 +104,18 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
   endtime <- tr1@stats@endtime
   
   # Sanity check temporal extent
-  if (difftime(tr2@stats@starttime,starttime,units='sec') > 1) {
+  if (abs(difftime(tr2@stats@starttime,starttime,units='sec')) > 1) {
     stop(paste("transferFunctionMetric: starttimes don't match:",tr2@stats@starttime,",",starttime))
   }
-  if (difftime(tr2@stats@endtime,endtime,units='sec') > 1) {
+  if (abs(difftime(tr2@stats@endtime,endtime,units='sec')) > 1) {
     stop(paste("transferFunctionMetric: endtimes don't match:",tr2@stats@endtime,",",endtime))
   }
   
   # Sanity check sampling rates
-  if (tr1@stats@sampling_rate < 1) {
+  if (round(tr1@stats@sampling_rate,digits=5) < 1) {
     stop(paste("transferFunctionMetric:",tr1@id,"has a sampling_rate < 1."))
   }
-  if (tr2@stats@sampling_rate < 1) {
+  if (round(tr2@stats@sampling_rate,digits=5) < 1) {
     stop(paste("transferFunctionMetric:",tr2@id,"has a sampling_rate < 1."))
   } 
   
@@ -125,28 +125,38 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
   sampling_rate <- min(sr1,sr2)
   
   if (sr1 > sampling_rate) {
-    if (pracma::rem(sr1,sampling_rate) > 0) {
+    if (sr1 %% sampling_rate > 0) {
       stop(paste("transferFunctionMetric: sampling rates are not multiples of each other,", tr1@id,",", tr2@id))
     }
     increment <- round(sr1/sampling_rate)
-    d1 <- signal::decimate(tr1@data,increment)      
+    if (increment > 10) {
+      stop(paste("transferFunctionMetric: sampling rates differ by more than a factor of 10,", tr1@id,",", tr2@id))
+    }
+    d1 <- signal::decimate(tr1@data,increment,7)      
   } else {
-    d1 <- tr1@data
+    d1 <- signal::decimate(tr1@data,1,7)
   }
   
   if (sr2 > sampling_rate) {
-    if (pracma::rem(sr2,sampling_rate) > 0) {
+    if (sr2 %% sampling_rate > 0 ) {
       stop(paste("transferFunctionMetric: sampling rates are not multiples of each other,", tr1@id,",", tr2@id))
     }
     increment <- round(sr2/sampling_rate)
-    d2 <- signal::decimate(tr2@data,increment)      
+    if (increment > 10) {
+      stop(paste("transferFunctionMetric: sampling rates differ by more than a factor of 10,", tr1@id,",", tr2@id))
+    }
+    d2 <- signal::decimate(tr2@data,increment,7)      
   } else {
-    d2 <- tr2@data
+    d2 <- signal::decimate(tr2@data,1,7)
   }
   
   # Sanity check that we have valid data everywhere
-  if ( any(is.na(d1)) || any(is.na(d2)) ) {
-    stop(paste("transferFunctionMetric: NA values generated during resampling,", tr1@id,",", tr2@id))
+  if ( any(is.na(d1)) ) {
+    stop(paste("transferFunctionMetric: NA values generated during resampling,", tr1@id))
+  }
+
+  if ( any(is.na(d2)) ) {
+    stop(paste("transferFunctionMetric: NA values generated during resampling,", tr2@id))
   }
   
   #-----------------------------------------------------------------------------
@@ -190,8 +200,11 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
     ts2 <- stats::ts(d2[first:last],frequency=sampling_rate)
 
     # Sanity check that we have valid data everywhere
-    if ( any(is.na(ts1)) || any(is.na(ts2)) ) {
-      stop(paste("transferFunctionMetric: NA values generated during smoothing,", tr1@id,",", tr2@id))
+    if ( any(is.na(ts1)) ) {
+      stop(paste("transferFunctionMetric: NA values generated during smoothing,", tr1@id))
+    }
+    if (any(is.na(ts2))) {
+      stop(paste("transferFunctionMetric: NA values generated during smoothing,", tr2@id))
     }
 
     # Cross-spectrum
@@ -283,4 +296,5 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
              metricName="transfer_function", elementNames=elementNames, elementValues=elementValues)
 
   return(c(m1))
+
 }

@@ -77,11 +77,20 @@ PSDMetric <- function(st,
   if (length(st)==1) { 
       stop(c("PSDMetric: stopping PSD calculation because st length is one sample"))
   }
+  stm <- mergeTraces(st,fillMethod="fillZero")@traces[[1]]
+  if (isDC(stm)) {
+      stop(c("PSDMetric: stopping PSD calculation because st is flatlined"))
+  }
+  rm(stm)
   
   sampling_rate <- st@traces[[1]]@stats@sampling_rate   # remember the sample rate
   
   # Use the psdList() function to apply the McNamara algorithm
   psdList <- psdList(st)
+
+  if (!length(psdList)) {
+     stop(paste("PSDMetric: No PSDs returned for",st@traces[[1]]@id))
+  }
 
   # There is a remote possibility that different traces will have different quality identifiers
   snclqs <- sapply(psdList, getElement, "snclq")
@@ -90,10 +99,6 @@ PSDMetric <- function(st,
     stop(paste("PSDMetric: More than one SNCLQ in trace:",ids))
   } else {
     snclq <- unique(snclqs)[1]
-  }
-
-  if (!length(psdList)) {
-     stop(paste("PSDMetric: No PSDs returned for",st@traces[[1]]@id))
   }
 
   
@@ -209,14 +214,12 @@ PSDMetric <- function(st,
       starttime <- st@traces[[1]]@stats@starttime
       endtime <- st@traces[[length(st@traces)]]@stats@endtime
       
-      if (is.numeric(avg_pct_above) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
-              m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_above_nhnm", elementNames=c("value"), elementValues=avg_pct_above)
-	      svMetricList <- append(svMetricList,list(m1))
-      }
-      if(is.numeric(avg_pct_below) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
-              m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
-	      svMetricList <- append(svMetricList,list(m2))
-      }
+      m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_above_nhnm", elementNames=c("value"), elementValues=avg_pct_above)
+      svMetricList <- append(svMetricList,list(m1))
+
+      m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
+      svMetricList <- append(svMetricList,list(m2))
+
       if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|BX|HX") ) {
               m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_exp", elementNames=c("value"), elementValues=dead_channel_exp)
 	      svMetricList <- append(svMetricList,list(m3))

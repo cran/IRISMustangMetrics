@@ -80,10 +80,6 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
   }
   
   # Create and return a list of Metric objects
-  #m1 <- new("SingleValueMetric", snclq=snclq, starttime=starttime, endtime=endtime,
-  #          metricName="max_stalta", value=maxSTALTA,
-  #          attributeName="time", attributeValueString=format(eventTime,format="%Y-%m-%dT%H:%M:%S"))
-
   m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="max_stalta",
              elementNames=c("value","time"), elementValues=c(maxSTALTA, eventTime),
              valueStrings=c(format(maxSTALTA), format(eventTime,format="%Y-%m-%dT%H:%M:%S")))

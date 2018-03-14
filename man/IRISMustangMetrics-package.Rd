@@ -28,6 +28,27 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.1.0
+  \itemize{
+   \item{transfer_function requires sample rates to be within a factor of 10 to avoid decimation effects on amplitude}
+   \item{transfer_function uses 7 order Chebyshev filter in the decimate function, to correct 1\% error occurring with default 8 order Chebyshev}
+   \item{fixed bug in transfer_function trace start and end time comparisons}
+   \item{transfer_function when determining if sample rate < 1, round to 5 digits first}
+   \item{getGeneralValueMetrics added metric_error, ts_channel_continuity, ts_channel_up_time, ts_gap_length, ts_gap_length_total, ts_max_gap, 
+         ts_max_gap_total, ts_num_gaps, ts_num_gaps_total, ts_percent_availability, ts_percent_availability metrics}
+   \item{aliased the getGeneralValueMetrics function to getMustangMetrics}
+   \item{dailyDCOffsetMetric now returns error when result is NaN or NA}
+  }
+
+  version 2.0.9
+  \itemize{
+   \item{removed dependency on pracma package}
+   \item{removed channel restrictions for pct_above_nhnm,pct_below_nlm}
+   \item{cross correlation sampling rates of < 1 will round to 2 digits}
+   \item{getGeneralValue metrics better handles case of no targets found}
+   \item{improved error handling in spikesMetric.R}
+  }
+
   version 2.0.8
   \itemize{
    \item{minor bug fix to ISPAQUtils.R, spikes=numSpikes}
@@ -51,7 +72,7 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
   version 2.0.4
   \itemize{
-   \item{adds additional sanity check to \code{getGeneralValueMetrics()}.}
+   \item{adds additional sanity check to \code{getGeneralValueMetrics()}}
    \item{createBssUrl() adds "&nodata=404" to url}
   }
 
@@ -66,9 +87,9 @@ IRIS DMC web services: \url{http://service.iris.edu/}
   version 2.0.0 -- GeneralValueMetrics
   \itemize{
     \item{\code{GeneralValueMetric} class introduced, \code{SingleValueMetric} class deprecated. All metrics that previously returned
-          \code{SingleValueMetric} now return \code{GeneralValueMetric}.}
-    \item{\code{getGeneralValueMetrics()} function added. Retreives metrics measurements from BSS database.}
-    \item{\code{crossCorrelationMetric()} does not return timing_drift. The metric proved unreliable.}
+          \code{SingleValueMetric} now return \code{GeneralValueMetric}}
+    \item{\code{getGeneralValueMetrics()} function added. Retreives metrics measurements from BSS database}
+    \item{\code{crossCorrelationMetric()} does not return timing_drift. The metric proved unreliable}
     \item{users can now supply instrument response information in the form of frequency, amplitude, phase
           to the function \code{PSDMetric}, in place of the getEvalresp webservice call}
   }

@@ -127,7 +127,7 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
                  silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
@@ -309,7 +309,7 @@ getMetricsXml.IrisClient <- function(obj, network, station, location, channel,
                  silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
@@ -389,7 +389,7 @@ getLatencyValuesXml.IrisClient <- function(obj, network, station, location, chan
                  silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
@@ -578,7 +578,7 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
                  silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
@@ -848,7 +848,7 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                  silent=TRUE)
 
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getGeneralValueMetrics.IrisClient: URL Not Found.",url))
@@ -865,6 +865,9 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
       err_msg <- lines[1]
       stop(paste("getGeneralValueMetrics.IrisClient:",err_msg))
     } 
+    if (any(stringr::str_detect(lines,"No targets were found"))) {
+      stop(paste("getGeneralValueMetrics.IrisClient:", "No targets were found"))
+    }
   }
  
   # No errors so proceed
@@ -896,6 +899,7 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                       "Max LTA/STA Metric"="max_ltasta",
                       "Max Overlap Metric"="max_overlap",
                       "Max STA/LTA Metric"="max_stalta",
+                      "Metric Error Metric"="metric_error",
                       "Missing Padded Data Metric"="missing_padded_data",
                       "Num Gaps Metric"="num_gaps",
                       "Num Overlaps Metric"="num_overlaps",
@@ -916,6 +920,16 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                       "Timing Correction Metric"="timing_correction",
                       "Timing Quality Metric"="timing_quality",
                       "Total Latency Metric"="total_latency",
+                      "Ts Channel Continuity"="ts_channel_continuity",
+                      "Ts Channel Up Time Metric"="ts_channel_up_time",
+                      "Ts Gap Length Metric"="ts_gap_length",
+                      "Ts Gap Length Total Metric"="ts_gap_length_total",
+                      "Ts Max Gap Metric"="ts_max_gap",
+                      "Ts Max Gap Total Metric"="ts_max_gap_total",
+                      "Ts Num Gaps Metric"="ts_num_gaps",
+                      "Ts Num Gaps Total Metric"="ts_num_gaps_total",
+                      "Ts Percent Availability Metric"="ts_percent_availability",
+                      "Ts Percent Availability Total Metric"="ts_percent_availability_total",
                       "Up Down Times Metric"="up_down_times")
 
   # Break the text into chunks separated by "\n\n".
@@ -926,7 +940,12 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
   for (i in seq(length(chunks))) {
 
     # Create a dataframe from the text
-    DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i])
+    result <- try( DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i]),silent=TRUE)
+    if (class(result)[1] == "try-error" ) {
+        err_msg <- geterrmessage()
+        stop(paste("getGeneralValueMetrics.IrisClient: read.csv", err_msg, url))
+    }
+
 
     # Get metric name from first line of chunk
     lines <- unlist(stringr::str_split(chunks[i],"\\n"))
@@ -968,9 +987,20 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     } 
 
     # Convert time strings
-    DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
-    DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
-    DF$loadtime <- as.POSIXct(DF$loadtime, "%Y/%m/%d %H:%M:%OS", tz="GMT")
+    result <- try( DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
+    if (class(result)[1] == "try-error" ) {
+        stop(paste("getGeneralValueMetrics.IrisClient: convert starttime",DF$starttime[1], "to as.POSIXct failed"))
+    }
+
+    result <- try(DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
+    if (class(result)[1] == "try-error" ) {
+        stop(paste("getGeneralValueMetrics.IrisClient: convert endtime",DF$endtime[1], "to as.POSIXct failed"))
+    }
+
+    result <- try(DF$loadtime <- as.POSIXct(DF$loadtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
+    if (class(result)[1] == "try-error" ) {
+        stop(paste("getGeneralValueMetrics.IrisClient: convert loadtime", DF$loadtime[1], "to as.POSIXct failed"))
+    }
 
     # NOTE:  The database was originally populated with a version of this package
     # NOTE:  that always assigned quality to be 'B'. Later versions obtained the
@@ -1053,6 +1083,9 @@ setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
                                              starttime, endtime, metricName, "",
                                              "http://service.iris.edu/mustang/measurements/1/query?"))
 
+
+getMustangMetrics <- getGeneralValueMetrics
+
 # getPsdMetrics -----------------------------------------------------------
 #
 # Example of getting PSD output from the 'measurements' service
@@ -1097,7 +1130,7 @@ getPsdMetrics.IrisClient <- function(obj, network, station, location, channel, s
   result <- try( psdXml <- RCurl::getURL(url, useragent=obj@useragent), silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (class(result)[1] == "try-error" ) {
     
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {

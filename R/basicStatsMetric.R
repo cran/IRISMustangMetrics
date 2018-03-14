@@ -35,11 +35,11 @@ basicStatsMetric <- function(st) {
   snclq <- unique_ids[1]
   
   # Calculate the range metrics
-  min <- min(st)
+  min <- min(st, na.rm=TRUE)
   median <- median(st, na.rm=TRUE)
-  mean <- mean(st)
-  max <- max(st)
-  rmsVariance <- rmsVariance(st)
+  mean <- mean(st, na.rm=TRUE)
+  max <- max(st, na.rm=TRUE)
+  rmsVariance <- rmsVariance(st,na.rm=TRUE)
 
   countUnique <- function(x){
      data <- unlist(lapply(x@traces,slot,"data"))

@@ -91,7 +91,7 @@ dailyDCOffsetMetric <- function(df,
   if (outputType==1) {               # either take the last value in the metric vector or entire metric vector, depending on outputType flag
       j <- length(metric)
       if (is.na(metric[j])) {
-           next
+           stop("dailyDCOffsetMetric: NA value returned")
       } else {
            metricList[[1]] <- list( new("GeneralValueMetric",
                                  snclq=df[j,"snclq"], starttime=df[j,"starttime"], endtime=df[j,"endtime"],
@@ -110,7 +110,11 @@ dailyDCOffsetMetric <- function(df,
           index <- index+1
       }
   }
-  
+
+  if (length(metricList) == 0) {
+     stop("dailyDCOffsetMetric: NA values returned")
+  }
+
   return(metricList)
 }
 

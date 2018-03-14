@@ -36,12 +36,16 @@ spikesMetric <- function(st, windowSize=41, thresholdMin=10, selectivity=NA, fix
   x <- sapply(1:length(st@traces),function(x) { c(st@traces[[x]]@data) })
   x <- c(x, recursive=TRUE)
     
+  if (length(x) < windowSize) {
+     stop(paste("spikesMetric: skipping ", st@traces[[1]]@id, "trace length", length(x), "is less than windowSize", windowSize))
+  }
+
   # Calculate the total number of outliers from all traces
   count <- 0  
   result <- try( outlierIndices <- seismicRoll::findOutliers(x, n=windowSize, thresholdMin=thresholdMin ,selectivity=selectivity, fixedThreshold=fixedThreshold),
                    silent=TRUE )
     
-  if (class(result) != "try-error" ) {    
+  if (class(result)[1] != "try-error" ) {    
       # NOTE:  Ignore adjacent outliers when determining the count of spikes. 
       # NOTE:  But be sure there is at least one spike if there is at least one outlier.
       if (length(outlierIndices) != 0 ) {

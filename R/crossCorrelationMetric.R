@@ -71,8 +71,8 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter) {
   
   # Deal with potentially different sampling rates
   if (tr1@stats@sampling_rate < 1 || tr2@stats@sampling_rate < 1 ) {
-       sr1 <- tr1@stats@sampling_rate
-       sr2 <- tr2@stats@sampling_rate
+       sr1 <- round(tr1@stats@sampling_rate,2)
+       sr2 <- round(tr2@stats@sampling_rate,2)
   } else {
        sr1 <- as.integer(round(tr1@stats@sampling_rate))
        sr2 <- as.integer(round(tr2@stats@sampling_rate))
@@ -81,7 +81,8 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter) {
   sampling_rate <- min(sr1,sr2)
   
   if (sr1 > sampling_rate) {
-    if (pracma::rem(sr1,sampling_rate) > 0) {
+    #if (pracma::rem(sr1,sampling_rate) > 0) {
+    if (sr1 %% sampling_rate > 0 ) {
       stop(paste0("crossCorrelationMetric: sampling rates are not multiples of each other:",
                   tr1@id,"=",sr1,", ",tr2@id,"=",sr2))
     }
@@ -92,7 +93,8 @@ crossCorrelationMetric <- function(st1, st2, maxLagSecs=10, filter) {
   }
   
   if (sr2 > sampling_rate) {
-    if (pracma::rem(sr2,sampling_rate) > 0) {
+    #if (pracma::rem(sr2,sampling_rate) > 0) {
+    if (sr2 %% sampling_rate > 0 ) {
       stop(paste0("crossCorrelationMetric: sampling rates are not multiples of each other:",
                   tr1@id,"=",sr1,", ",tr2@id,"=",sr2))
     }

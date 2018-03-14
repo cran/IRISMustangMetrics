@@ -57,6 +57,7 @@ export("timesMetric2Xml")
 # from BSSUtils
 export("saveMetricList")
 export("convertBssErrors")
+export("getMustangMetrics")
 # from ISPAQUtils
 export("getMetricFunctionMetadata")
 # from metrics
