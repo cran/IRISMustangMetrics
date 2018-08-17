@@ -28,6 +28,11 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.1.1
+  \itemize{
+   \item{fixed bug in PSDMetrics that affected dead_channel_gsn results}
+  }
+
   version 2.1.0
   \itemize{
    \item{transfer_function requires sample rates to be within a factor of 10 to avoid decimation effects on amplitude}
@@ -45,7 +50,7 @@ IRIS DMC web services: \url{http://service.iris.edu/}
    \item{removed dependency on pracma package}
    \item{removed channel restrictions for pct_above_nhnm,pct_below_nlm}
    \item{cross correlation sampling rates of < 1 will round to 2 digits}
-   \item{getGeneralValue metrics better handles case of no targets found}
+   \item{getGeneralValueMetrics better handles case of no targets found}
    \item{improved error handling in spikesMetric.R}
   }
 

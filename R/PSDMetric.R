@@ -172,6 +172,7 @@ PSDMetric <- function(st,
       #   2) Convert band from PSD mean to positive, non-zero values
       #   3) Fit log10(PSD mean) vs. log10(period) to a line
       #   4) Calculate the standard deviation of residuals of the fit (How close to exponential is the PSD mean line?)
+
       first <- max(which(period >= expHiPeriod)) + 1
       last <- min(which(period <= expLoPeriod)) - 1
       positiveMean <- psdStats$mean[first:last] - min(psdStats$mean[first:last]) + .1  
@@ -182,6 +183,7 @@ PSDMetric <- function(st,
       #   1) determine index range (inverted because of freq->period conversion)
       #   3) Fit PSD mean vs. log10(period) to a line
       #   4) Calculate the standard deviation of residuals of the fit
+
       first <- max(which(period >= linHiPeriod)) + 1
       last <- min(which(period <= linLoPeriod)) - 1
       psdMean <- psdStats$mean[first:last]
@@ -195,40 +197,41 @@ PSDMetric <- function(st,
       #   4) collect differences in the median vector from the equivalent NLNM vector [ NLNM(x) - Y(x) ]
       #   5) average the result of the differences
       #   6) if average > 5.0, mark dead_channel_gsn value = 1 (TRUE), else mark value = 0 (FALSE)
-      dead_channel_gsn <- 0   # for scope
-      if (sampling_rate >= 1) {
-	    first <- max(which(period >= 4)) + 1
-	    last <- min(which(period <= 8)) - 1
-	    psdSlice <- psdStats$noiseMatrix[,first:last]  #gks
-	    unH_floor <- floor(min(psdSlice)) #gks
-	    pdfSlice_m <- psdStats$pdfMatrix[,first:last]		# slice 4 to 8 s band from pdf matrix
-	    pdfMedian_v <- apply(pdfSlice_m,2,FUN=function(x)median(unHistogram(x,unH_floor,1)))  	# column-wise median of 'counted' binned dB values
-	    # verify that we have an average low dB value in this case and treat this as a dead channel condition
-	    nlnmSlice <- psdStats$nlnm[first:last]  # get the NLNM slice to match
-	    diffToNM_v <- nlnmSlice[!(sapply(pdfMedian_v,is.null))] - unlist(pdfMedian_v)  # [ NLNM(x) - Y(x) ]
-	    averageDiff <- mean(diffToNM_v)                     # get average of the differences (i.e. deviation)
-	    dead_channel_gsn <- ifelse(averageDiff > 5.0,1,0)  # compare average to 5 dB, save result
+
+      dead_channel_gsn <- "" # for scope
+      if (sampling_rate > 0.999) {
+          first <- max(which(period >= 4)) + 1
+          last <- min(which(period <= 8)) - 1
+          psdSlice <- psdStats$noiseMatrix[,first:last]  
+          if (is.vector(psdSlice)) {
+              psdMedian_v <- psdSlice
+          } else {
+              psdMedian_v <- apply(psdSlice,2,FUN=function(x) median(x))
+          }
+	  # verify that we have an average low dB value in this case and treat this as a dead channel condition
+	  nlnmSlice <- psdStats$nlnm[first:last]  # get the NLNM slice to match
+	  diffToNM_v <- nlnmSlice[!(sapply(psdMedian_v,is.null))] - unlist(psdMedian_v)  # [ NLNM(x) - Y(x) ]
+	  averageDiff <- mean(diffToNM_v)                     # get average of the differences (i.e. deviation)
+	  dead_channel_gsn <- ifelse(averageDiff > 5.0,1,0)  # compare average to 5 dB, save result
       }
       
       # Create metricList
       starttime <- st@traces[[1]]@stats@starttime
       endtime <- st@traces[[length(st@traces)]]@stats@endtime
-      
-      m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_above_nhnm", elementNames=c("value"), elementValues=avg_pct_above)
-      svMetricList <- append(svMetricList,list(m1))
+
 
       m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
       svMetricList <- append(svMetricList,list(m2))
 
-      if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|BX|HX") ) {
+      if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|FH|BX|HX") ) {
               m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_exp", elementNames=c("value"), elementValues=dead_channel_exp)
 	      svMetricList <- append(svMetricList,list(m3))
       }
-      if(is.numeric(dead_channel_lin) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|BX|HX")) {
+      if(is.numeric(dead_channel_lin) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|FH|BX|HX")) {
               m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_lin", elementNames=c("value"), elementValues=dead_channel_lin)
 	      svMetricList <- append(svMetricList,list(m4))
       }
-      if(is.numeric(dead_channel_gsn) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|LH|MH|BX|HX")) {
+      if(is.numeric(dead_channel_gsn) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|FH|LH|MH|BX|HX")) {
               m5 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_gsn", elementNames=c("value"), elementValues=dead_channel_gsn)
 	      svMetricList <- append(svMetricList,list(m5))
       }

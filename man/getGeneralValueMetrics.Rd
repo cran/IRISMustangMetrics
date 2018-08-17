@@ -89,6 +89,7 @@ in the dataframe.
 
 %% max preformatted length ---------------------------------------------------
 \examples{
+  \dontrun{
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
@@ -101,5 +102,6 @@ juneStats <- getGeneralValueMetrics(iris,"IU","ANMO","","BH[12Z]",
                                         starttime,endtime,metricName)
 
 print(juneStats)
+  }
 }
 \keyword{ webservices }

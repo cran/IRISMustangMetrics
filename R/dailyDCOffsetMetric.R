@@ -110,11 +110,10 @@ dailyDCOffsetMetric <- function(df,
           index <- index+1
       }
   }
-
   if (length(metricList) == 0) {
      stop("dailyDCOffsetMetric: NA values returned")
   }
-
+  
   return(metricList)
 }
 
