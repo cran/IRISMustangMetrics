@@ -57,7 +57,7 @@ a large seismic signal in an otherwise lo-noise signal.
 %% \seealso{ }
 
 \examples{
-  \dontrun{
+\dontrun{
 # Open a connection to IRIS DMC webservices
 iris <- new("IrisClient")
 
@@ -75,7 +75,7 @@ offsetTimes <- metricList[[1]]@values
 # Plot the signal and mark locations where a DC offset was detected
 plot(st)
 abline(v=offsetTimes,col='red')
-  }
+}
 }
 
 \keyword{metrics}

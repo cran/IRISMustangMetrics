@@ -1,6 +1,6 @@
 Type: Package
 Package: IRISMustangMetrics
-Version: 2.1.1
+Version: 2.1.2
 Title: Statistics and Metrics for Seismic Data
 Authors@R: c(
     person("Jonathan", "Callahan", email="jonathan@mazamascience.com", role=c("aut")),
@@ -30,5 +30,5 @@ Description: Classes and functions for metrics calculation as part of the
 License: GPL (>= 2)
 Repository: CRAN
 NeedsCompilation: no
-Packaged: 2018-08-17 16:09:46 UTC; gillian
-Date/Publication: 2018-08-17 16:40:03 UTC
+Packaged: 2018-10-17 19:03:04 UTC; gillian
+Date/Publication: 2018-10-17 19:50:03 UTC

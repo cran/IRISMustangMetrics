@@ -108,11 +108,11 @@ juneStats <- getSingleValueMetrics(iris,"IU","ANMO","00","BHZ",
 head(juneStats)
 
 # Simple ggplot2 plot
-library(ggplot2)
-p <- ggplot(juneStats, aes(x=starttime,y=value, color=as.factor(metricName))) +
-     geom_step()
+#library(ggplot2)
+#p <- ggplot(juneStats, aes(x=starttime,y=value, color=as.factor(metricName))) +
+#     geom_step()
 
-print(p)
+#print(p)
   }
 }
 

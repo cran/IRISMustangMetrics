@@ -219,6 +219,8 @@ PSDMetric <- function(st,
       starttime <- st@traces[[1]]@stats@starttime
       endtime <- st@traces[[length(st@traces)]]@stats@endtime
 
+      m1 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_above_nhnm", elementNames=c("value"), elementValues=avg_pct_above)
+      svMetricList <- append(svMetricList,list(m1))
 
       m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
       svMetricList <- append(svMetricList,list(m2))

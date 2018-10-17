@@ -28,6 +28,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.1.2
+  \itemize{
+   \item{version 2.1.1 unintentionally removed the pct_above_nhnm metric. This version restores it.}
+   \item{made sample rate sanity rate check consistent between correlationMetric and crossCorrelationMetric}
+  }
+
   version 2.1.1
   \itemize{
    \item{fixed bug in PSDMetrics that affected dead_channel_gsn results}

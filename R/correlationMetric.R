@@ -37,7 +37,16 @@ correlationMetric <- function(st1, st2) {
   }
 
   # Sanity check sampling rates
-  if (tr1@stats@sampling_rate != tr2@stats@sampling_rate) {
+  
+  if (tr1@stats@sampling_rate < 1 || tr2@stats@sampling_rate < 1 ) {
+       sr1 <- round(tr1@stats@sampling_rate,2)
+       sr2 <- round(tr2@stats@sampling_rate,2)
+  } else {
+       sr1 <- as.integer(round(tr1@stats@sampling_rate))
+       sr2 <- as.integer(round(tr2@stats@sampling_rate))
+  }
+
+  if (sr1 != sr2) {
     stop(paste("correlationMetric: Incompatible sampling rates"))
   }
   
