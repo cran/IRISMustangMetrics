@@ -86,7 +86,8 @@ getMetricFunctionMetadata <- function() {
       "outputType": "plot",
       "elementNames": null,
       "metrics": [
-        "pdf_plot"
+        "pdf_plot",
+        "pdf_aggregator"
         ],
       "streamCount": 1,
       "speed": "slow"

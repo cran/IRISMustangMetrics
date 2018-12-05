@@ -436,13 +436,17 @@ setMethod("getLatencyValuesXml", signature(obj="IrisClient",
 #       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
 
 if (!isGeneric("createBssUrl")) {
-  setGeneric("createBssUrl", function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) {
+  setGeneric("createBssUrl", function(obj, network, station, location, channel, starttime, endtime, metricName, ... ) {
     standardGeneric("createBssUrl")
   })
 }
 
 createBssUrl.IrisClient <- function(obj, network, station, location, channel,
-                                    starttime, endtime, metricName, constraint, url) {
+                                    starttime, endtime, metricName, constraint="", url=NULL) {
+
+  if (is.null(url)){
+     url <- "http://service.iris.edu/mustang/measurements/1/query?"
+  }
   
   # Assemble URL
   if (network != "") {
@@ -496,39 +500,10 @@ createBssUrl.IrisClient <- function(obj, network, station, location, channel,
 setMethod("createBssUrl", signature(obj="IrisClient", 
                                     network="character", location="character", station="character", 
                                     channel="character",starttime="POSIXct", endtime="POSIXct", 
-                                    metricName="character", constraint="character", url="character"), 
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
+                                    metricName="character"), 
+          function(obj, network, station, location, channel, starttime, endtime, metricName, ...) 
             createBssUrl.IrisClient(obj, network, station, location, channel, starttime, endtime, 
-                                    metricName, constraint, url))
-# url="missing"
-setMethod("createBssUrl", signature(obj="IrisClient", 
-                                    network="character", location="character", station="character", 
-                                    channel="character",starttime="POSIXct", endtime="POSIXct", 
-                                    metricName="character", constraint="character", url="missing"), 
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
-            createBssUrl.IrisClient(obj, network, station, location, channel,
-                                    starttime, endtime, metricName, constraint,
-                                    "http://service.iris.edu/mustang/measurements/1/query?"))
-
-# constraint="missing"
-setMethod("createBssUrl", signature(obj="IrisClient", 
-                                    network="character", location="character", station="character", 
-                                    channel="character",starttime="POSIXct", endtime="POSIXct", 
-                                    metricName="character", constraint="missing", url="character"), 
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
-            createBssUrl.IrisClient(obj, network, station, location, channel,
-                                    starttime, endtime, metricName, "", url))
-
-
-# constraint="missing", url="missing"
-setMethod("createBssUrl", signature(obj="IrisClient", 
-                                    network="character", location="character", station="character", 
-                                    channel="character",starttime="POSIXct", endtime="POSIXct", 
-                                    metricName="character", constraint="missing", url="missing"), 
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
-            createBssUrl.IrisClient(obj, network, station, location, channel,
-                                    starttime, endtime, metricName, "",
-                                    "http://service.iris.edu/mustang/measurements/1/query?"))
+                                    metricName, ...))
 
 
 
@@ -593,11 +568,31 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
     # Handle error messages coming directly from the BSS
     # NOTE:  Encountered a situation where measurementsText had more than one element
     lines <- unlist(stringr::str_split(measurementsText,"\\n"))
+
     if ( stringr::str_detect(lines[1],"Exception") ) {
-      err_msg <- lines[2]
+      err_msg <- lines[1]
       stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
+    } else if (stringr::str_detect(tolower(lines[1]),"error report")) {
+      pattern <- "description.*?</u>"
+      pattern_match <- regmatches(lines, regexec(pattern,lines))[[1]][1]
+      if (!is.na(pattern_match)){
+         err_msg <-  gsub("description</b> <u>","",pattern_match)
+         err_msg <-  gsub("</u>","",err_msg)
+         stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
+      } else {
+         stop(paste("getSingleValueMetrics.IrisClient:",lines[2]))
+      }
+    } else if (stringr::str_detect(tolower(measurementsText),"<h1>")) {
+      pattern <- "<h1>.*?</h1>"
+      pattern_match <- regmatches(measurementsText, regexec(pattern,measurementsText))[[1]][1]
+      if (!is.na(pattern_match)){
+         err_msg <-  gsub("<h1>\\s+","",pattern_match)
+         err_msg <-  gsub("\\s+</h1>","",err_msg)
+         stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
+      } else {
+         stop(paste("getSingleValueMetrics.IrisClient:",measurementsText))
+      }
     }
-    
   }
 
   if(nchar(measurementsText)==0){
@@ -825,13 +820,13 @@ setMethod("getSingleValueMetrics", signature(obj="IrisClient",
 #"73.0000","90.6756","17.6756","107.676","18.0000","108.000","0.979605","0.747436","7.10","IU.ANMO.00.BHZ.M","2016/08/29 05:10:48","2016/08/29 05:21:08","2016/08/31 23:07:13.379066"
 
 if (!isGeneric("getGeneralValueMetrics")) {
-  setGeneric("getGeneralValueMetrics", function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) {
+  setGeneric("getGeneralValueMetrics", function(obj, network, station, location, channel, starttime, endtime, metricName, ...) {
     standardGeneric("getGeneralValueMetrics")
   })
 }
 
 getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, channel,
-                                             starttime, endtime, metricName, constraint, url) {
+                                             starttime, endtime, metricName, constraint="", url=NULL) {
 
   # Sanity check
   if (length(metricName) > 1) {
@@ -839,35 +834,75 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
   }
 
   # Create the BSS URL
-  url <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
+  url2 <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
+
+  if (is.null(url)) {
+    url <- paste0(strsplit(url2,"\\?")[[1]][1],"?")
+  }
 
   # Get data from the measurements webservice
   # NOTE:  RCurl::getURLContent returns a binary objected based on the "resulting HTTP  header's Content-Type field."
   # NOTE:  Use RCurl::getURL to return data as character.
-  result <- try( measurementsText <- RCurl::getURL(url, useragent=obj@useragent),
+  result <- try( measurementsText <- RCurl::getURL(url2, useragent=obj@useragent),
                  silent=TRUE)
 
   # Handle error response
   if (class(result)[1] == "try-error" ) {
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
-      stop(paste("getGeneralValueMetrics.IrisClient: URL Not Found.",url))
+      stop(paste("getMustangMetrics.IrisClient: URL Not Found.",url2))
     } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
-      stop(paste("getGeneralValueMetrics.IrisClient: Couldn't connect to host.",url))
+      stop(paste("getMustangMetrics.IrisClient: Couldn't connect to host.",url2))
     } else {
-      stop(paste("getGeneralValueMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url))
+      stop(paste("getMustangMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url2))
     }
   } else {
     # Handle error messages coming directly from the BSS
     # NOTE:  Encountered a situation where measurementsText had more than one element
-    lines <- unlist(stringr::str_split(measurementsText,"\\n"))
+    lines <- unlist(stringr::str_split(result,"\\n"))
+    lines <- trimws(lines)
+    results <- gsub("\\n","",result)
+
     if (stringr::str_detect(lines[1],"Exception") ) {
       err_msg <- lines[1]
-      stop(paste("getGeneralValueMetrics.IrisClient:",err_msg))
-    } 
-    if (any(stringr::str_detect(lines,"No targets were found"))) {
-      stop(paste("getGeneralValueMetrics.IrisClient:", "No targets were found"))
+      stop(paste("getMustangMetrics.IrisClient:",err_msg))
+
+    } else if (any(stringr::str_detect(lines,"No targets were found"))) {
+      stop(paste("getMustangMetrics.IrisClient:", "No targets were found"))
+
+    } else if (any(stringr::str_detect(tolower(lines),"404 page not found"))) {
+      stop(paste("getMustangMetrics.IrisClient: URL not found", url2))
+
+    } else if (any(stringr::str_detect(tolower(lines),"404 not found"))) {
+      stop(paste("getMustangMetrics.IrisClient: URL not found", url2))
+
+    } else if (any(stringr::str_detect(tolower(lines),"No data found"))) {
+      stop(paste("getMustangMetrics.IrisClient: No data found", url2))
+
+    } else if (any(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))) {
+      next_index <- match("<h2>MUSTANG Error</h2>",lines)+1
+      err_msg <- gsub("</p>","",lines[next_index])
+      err_msg <- gsub("<p>","",err_msg)
+      err_msg <- gsub("&#039;","",err_msg)
+      stop(paste("getMustangMetrics.IrisClient:",err_msg))
+
+    } else if (stringr::str_detect(tolower(results),"error report")) {
+      pattern <- "description.*?</u>"
+      pattern_match <- regmatches(results, regexec(pattern,results))[[1]][1]
+      if (!is.na(pattern_match)){
+         err_msg <-  gsub("description</b> <u>","",pattern_match)
+         err_msg <-  gsub("</u>","",err_msg)
+         stop(paste("getMustangMetrics.IrisClient:",err_msg))
+      } else {
+         stop(paste("getMustangMetrics.IrisClient:",results))
+      }
+
+    } else if (is.na(stringr::str_detect(lines[2],"lddate"))) {
+         stop(paste("getMustangMetrics.IrisClient:",results))
+    } else if (!stringr::str_detect(lines[2],"lddate")) {
+         stop(paste("getMustangMetrics.IrisClient:",results))
     }
+      
   }
  
   # No errors so proceed
@@ -941,9 +976,10 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
 
     # Create a dataframe from the text
     result <- try( DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i]),silent=TRUE)
+ 
     if (class(result)[1] == "try-error" ) {
         err_msg <- geterrmessage()
-        stop(paste("getGeneralValueMetrics.IrisClient: read.csv", err_msg, url))
+        stop(paste("getMustangMetrics.IrisClient: read.csv", err_msg, url2))
     }
 
 
@@ -989,17 +1025,17 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     # Convert time strings
     result <- try( DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
     if (class(result)[1] == "try-error" ) {
-        stop(paste("getGeneralValueMetrics.IrisClient: convert starttime",DF$starttime[1], "to as.POSIXct failed"))
+        stop(paste("getMustangMetrics.IrisClient: convert starttime",DF$starttime[1], "to as.POSIXct failed"))
     }
 
     result <- try(DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
     if (class(result)[1] == "try-error" ) {
-        stop(paste("getGeneralValueMetrics.IrisClient: convert endtime",DF$endtime[1], "to as.POSIXct failed"))
+        stop(paste("getMustangMetrics.IrisClient: convert endtime",DF$endtime[1], "to as.POSIXct failed"))
     }
 
     result <- try(DF$loadtime <- as.POSIXct(DF$loadtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
     if (class(result)[1] == "try-error" ) {
-        stop(paste("getGeneralValueMetrics.IrisClient: convert loadtime", DF$loadtime[1], "to as.POSIXct failed"))
+        stop(paste("getMustangMetrics.IrisClient: convert loadtime", DF$loadtime[1], "to as.POSIXct failed"))
     }
 
     # NOTE:  The database was originally populated with a version of this package
@@ -1049,39 +1085,10 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
 setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
                                              network="character", location="character", station="character",
                                              channel="character",starttime="POSIXct", endtime="POSIXct",
-                                             metricName="character", constraint="character", url="character"),
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
+                                             metricName="character"),
+          function(obj, network, station, location, channel, starttime, endtime, metricName, ...)
             getGeneralValueMetrics.IrisClient(obj, network, station, location, channel, starttime, endtime,
-                                             metricName, constraint, url))
-# url="missing"
-setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
-                                             network="character", location="character", station="character",
-                                             channel="character",starttime="POSIXct", endtime="POSIXct",
-                                             metricName="character", constraint="character", url="missing"),
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
-            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
-                                             starttime, endtime, metricName, constraint,
-                                             "http://service.iris.edu/mustang/measurements/1/query?"))
-
-# constraint="missing"
-setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
-                                             network="character", location="character", station="character",
-                                             channel="character",starttime="POSIXct", endtime="POSIXct",
-                                             metricName="character", constraint="missing", url="character"),
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
-            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
-                                             starttime, endtime, metricName, "", url))
-
-
-# constraint="missing", url="missing"
-setMethod("getGeneralValueMetrics", signature(obj="IrisClient",
-                                             network="character", location="character", station="character",
-                                             channel="character",starttime="POSIXct", endtime="POSIXct",
-                                             metricName="character", constraint="missing", url="missing"),
-          function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url)
-            getGeneralValueMetrics.IrisClient(obj, network, station, location, channel,
-                                             starttime, endtime, metricName, "",
-                                             "http://service.iris.edu/mustang/measurements/1/query?"))
+                                             metricName, ...))
 
 
 getMustangMetrics <- getGeneralValueMetrics
@@ -1131,7 +1138,6 @@ getPsdMetrics.IrisClient <- function(obj, network, station, location, channel, s
   
   # Handle error response
   if (class(result)[1] == "try-error" ) {
-    
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getPsdMetrics.IrisClient: URL Not Found:",url))
@@ -1142,6 +1148,12 @@ getPsdMetrics.IrisClient <- function(obj, network, station, location, channel, s
     } 
     
   }
+
+  if (stringr::str_detect(psdXml,regex("Not Found",ignore_case=TRUE))) {
+      stop(paste("getPsdMetrics.IrisClient: URL Not Found:",url))
+  } else if (stringr::str_detect(psdXml,regex("couldn't connect to host",ignore_case=TRUE))) {
+      stop(paste("getPsdMetrics.IrisClient: Couldn't connect to host"),url)
+  } 
   
   # No errors so proceed
   docP <- XML::xmlTreeParse(psdXml, useInternalNodes=TRUE)

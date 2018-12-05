@@ -1,10 +1,7 @@
 \name{createBssUrl}
 
 \alias{createBssUrl}
-\alias{createBssUrl,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,character-method}
-\alias{createBssUrl,IrisClient,character,character,character,character,POSIXct,POSIXct,character,character,missing-method}
-\alias{createBssUrl,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,character-method}
-\alias{createBssUrl,IrisClient,character,character,character,character,POSIXct,POSIXct,character,missing,missing-method}
+\alias{createBssUrl,IrisClient,character,character,character,character,POSIXct,POSIXct,character-method}
 
 \title{Create URL to retrieve measurements from the MUSTANG BSS }
 
@@ -15,7 +12,7 @@ a request of the MUSTANG BSS (Backend Storage System).
 
 \usage{
 createBssUrl(obj, network, station, location, channel, 
-             starttime, endtime, metricName, constraint, url)
+             starttime, endtime, metricName, ...)
 }
 
 \arguments{
@@ -27,8 +24,10 @@ createBssUrl(obj, network, station, location, channel,
   \item{starttime}{ a POSIXct class specifying the starttime (GMT) }
   \item{endtime}{ a POSIXct class specifying the endtime (GMT) }
   \item{metricName}{ a character string containing one or more comma separated metric names }
-  \item{constraint}{ a character string containing value constraints }
-  \item{url}{ optional url of the BSS measurements service }
+  \item{\dots}{optional arguments
+    \code{constraint}{ a character string containing value constraints }
+    \code{url}{ optional url of the BSS measurements service }
+  }
 }
 
 \details{

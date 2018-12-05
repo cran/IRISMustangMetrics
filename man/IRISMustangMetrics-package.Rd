@@ -28,6 +28,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.1.3
+  \itemize{
+    \item{fixed bug related to getGeneralValueMetrics,getMustangMetrics error handling}
+    \item{added pdf_aggregator to ISPAQUtils.R, for multi-day pdf plotting within ISPAQ}
+  }
+
   version 2.1.2
   \itemize{
    \item{version 2.1.1 unintentionally removed the pct_above_nhnm metric. This version restores it.}
