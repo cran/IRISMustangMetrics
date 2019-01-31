@@ -61,7 +61,6 @@ getMetricFunctionMetadata <- function() {
       "metrics": [
         "pct_above_nhnm", 
         "pct_below_nlnm", 
-        "dead_channel_exp", 
         "dead_channel_lin", 
         "dead_channel_gsn"
         ], 
@@ -75,19 +74,29 @@ getMetricFunctionMetadata <- function() {
       "elementNames": null,
       "metrics": [
         "psd_corrected",
-        "pdf_text"
+        "pdf_text"       
         ],
       "streamCount": 1,
       "speed": "slow"
     },
-    "PSDPlot": {
+    "PSDPlot": {        
       "businessLogic": "PSD",
       "fullDay": true,
       "outputType": "plot",
       "elementNames": null,
       "metrics": [
-        "pdf_plot",
-        "pdf_aggregator"
+        "pdf_plot"
+        ],
+      "streamCount": 1,
+      "speed": "slow"
+    },
+    "PDF": {
+      "businessLogic": "PSD",
+      "fullDay": true,
+      "outputType": "DataFrame",
+      "elementNames": null,
+      "metrics": [
+        "pdf"
         ],
       "streamCount": 1,
       "speed": "slow"

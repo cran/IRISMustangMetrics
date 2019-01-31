@@ -28,6 +28,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.2.0
+  \itemize{
+    \item{removes dead_channel_exp, metric has been retired}
+    \item{renames pdf_aggregator in ISPAQUtils.R to pdf}
+  }
+
   version 2.1.3
   \itemize{
     \item{fixed bug related to getGeneralValueMetrics,getMustangMetrics error handling}

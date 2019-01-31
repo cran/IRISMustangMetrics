@@ -66,8 +66,6 @@
 utils::globalVariables(c('freq','hits','power'))
 
 PSDMetric <- function(st,
-                      expLoPeriod=4/(st@traces[[1]]@stats@sampling_rate),
-                      expHiPeriod=100,
                       linLoPeriod=4/(st@traces[[1]]@stats@sampling_rate),
                       linHiPeriod=100,
                       evalresp=NULL) {
@@ -138,27 +136,13 @@ PSDMetric <- function(st,
       avg_pct_above <- mean(psdStats$pct_above[psdStats$freq < nyquist/1.5], na.rm=TRUE)
       avg_pct_below <- mean(psdStats$pct_below[psdStats$freq < nyquist/1.5], na.rm=TRUE)
       
-      # NOTE:  The dead_channel_exponential metric is calculated by fitting the PSD mean
-      # NOTE:  line as seen in a PDF plot to an exponential and calculating the standard deviation of the residuals.
-      # NOTE:  The mean of a healthy set of PSDs will have a very non-exponential shape and
-      # NOTE:  large residuals while a "dead channel" (aka digitizer noise) will have a PSD mean that appears as
-      # NOTE:  an exponential decay as a function of log10(period).
-      # NOTE:
-      # NOTE:  The dead_channel_exp metric looks for an overall exponential decay regardless
-      # NOTE:  of the frequency range of the detector. Because of this, it lops off a few
-      # NOTE:  frequency bands at either end regardless of the frequencies they represent.
-      # NOTE:  As the frequency bands will be sensor specific because of the calculations in
-      # NOTE:  the psdList() function, we can get by with just lopping an integer number of bands
-      # NOTE:  rather than specifying the band pass region we want.
-      # NOTE:  This algorithm is purely heuristic and resulted from a visual assessment
-      # NOTE:  of PDF plots of channels known to be "dead".
       # NOTE:
       # NOTE:  Another metric fitting the PSD mean line as a linear function of log10(period)
       # NOTE:  over a specific band has been added. Some types of sensor malfunction result in a flat spectra that
       # NOTE:  is different from the curve produced by digitizer noise. This metric attempts to identify 
       # NOTE:  these instances. Be aware that some normal noise patterns will also score low on this metric.
       # NOTE:
-      # NOTE:  The dead_channel_exp and dead_channel_lin metrics are not valid for LH? or VH? channels.
+      # NOTE:  The dead_channel_lin metrics are not valid for LH? or VH? channels.
       # NOTE:
       # NOTE:  Yet another metric (dead_channel_gsn) has been added to the dead_channel family where we look at a
       # NOTE:  narrow band of the PDF and determine if the deviation below the NLNM is sufficient
@@ -167,18 +151,6 @@ PSDMetric <- function(st,
       # Convert frequency to period
       period <- 1/psdStats$freq
       
-      # Exponential fit metric:
-      #   1) determine index range (inverted because of freq->period conversion)
-      #   2) Convert band from PSD mean to positive, non-zero values
-      #   3) Fit log10(PSD mean) vs. log10(period) to a line
-      #   4) Calculate the standard deviation of residuals of the fit (How close to exponential is the PSD mean line?)
-
-      first <- max(which(period >= expHiPeriod)) + 1
-      last <- min(which(period <= expLoPeriod)) - 1
-      positiveMean <- psdStats$mean[first:last] - min(psdStats$mean[first:last]) + .1  
-      expFit <- stats::lm(log10(positiveMean) ~ log10(period[first:last]))
-      dead_channel_exp <- stats::sd(expFit$residuals)
-
       # Linear fit metric
       #   1) determine index range (inverted because of freq->period conversion)
       #   3) Fit PSD mean vs. log10(period) to a line
@@ -225,10 +197,6 @@ PSDMetric <- function(st,
       m2 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="pct_below_nlnm", elementNames=c("value"), elementValues=avg_pct_below)
       svMetricList <- append(svMetricList,list(m2))
 
-      if(is.numeric(dead_channel_exp) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|FH|BX|HX") ) {
-              m3 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_exp", elementNames=c("value"), elementValues=dead_channel_exp)
-	      svMetricList <- append(svMetricList,list(m3))
-      }
       if(is.numeric(dead_channel_lin) && stringr::str_detect(st@traces[[1]]@stats@channel,"BH|HH|CH|DH|FH|BX|HX")) {
               m4 <- new("GeneralValueMetric", snclq=snclq, starttime=starttime, endtime=endtime, metricName="dead_channel_lin", elementNames=c("value"), elementValues=dead_channel_lin)
 	      svMetricList <- append(svMetricList,list(m4))

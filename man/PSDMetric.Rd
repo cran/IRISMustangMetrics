@@ -12,8 +12,6 @@ metrics based on PSDs.
 
 \usage{
 PSDMetric(st,
-          expLoPeriod=4/(st@traces[[1]]@stats@sampling_rate),
-          expHiPeriod=100,
           linLoPeriod=4/(st@traces[[1]]@stats@sampling_rate),
           linHiPeriod=100,
           evalresp=NULL)
@@ -21,8 +19,6 @@ PSDMetric(st,
 
 \arguments{
   \item{st}{a \code{Stream} object containing a seismic signal}
-  \item{expLoPeriod}{low end of the period band use for calculating the exponential dead channel metric}
-  \item{expHiPeriod}{high end of the period band use for calculating the exponential dead channel metric}
   \item{linLoPeriod}{low end of the period band use for calculating the linear dead channel metric}
   \item{linHiPeriod}{high end of the period band use for calculating the linear dead channel metric}
   \item{evalresp}{dataframe of freq, amp, phase information matching output of \code{getEvalresp}, optional}
@@ -55,12 +51,6 @@ Other metrics calculated from the PSDs are returned in \code{svMetricList}.  The
   considered to avoid instrument response effects as you approach the nyquist frequency.
   This value is calculated over the entire time period.}
 
-  \item{\bold{dead_channel_exp} -- "dead channel metric - exponential fit"}{A "dead channel" metric is calculated
-  from the mean of all the PSDs generated. (Typically 47 for a 24 hour period.) Values of the PSD mean line over
-  the band (expLoPeriod:expHiPeriod) are fit to an exponential.  The \code{dead_channel_exp} metric is the standard
-  deviation of the fit residuals.  Lower numbers indicate a better fit and a higher likelihood that the mean PSD is
-  exponential -- an indication of a "dead channel".}
-
   \item{\bold{dead_channel_lin} -- "dead channel metric - linear fit"}{ A "dead channel" metric is calculated from
   the mean of all the PSDs generated. (Typically 47 for a 24 hour period.) Values of the PSD mean line over the band
   (linLoPeriod:linHiPeriod) are fit to a line.  The \code{dead_channel_lin} metric is the standard deviation of the
@@ -68,6 +58,8 @@ Other metrics calculated from the PSDs are returned in \code{svMetricList}.  The
   indication of a "dead channel".}
 
 }
+
+Note: The dead_channel_exp metric has been removed.
 
 }
 
@@ -81,7 +73,6 @@ Other metrics calculated from the PSDs are returned in \code{svMetricList}.  The
     \itemize{
       \item{\code{pct_above_nhnm}}
       \item{\code{pct_below_nlnm}}
-      \item{\code{dead_channel_exp}}
       \item{\code{dead_channel_lin}}
     }
   }
