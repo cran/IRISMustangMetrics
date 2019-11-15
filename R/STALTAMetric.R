@@ -28,7 +28,7 @@
 # algorithm = "classic_RR" | "classic_LR" (default) | "classic_LR2" | "EarleAndShearer_envelope | Wong_MER"
 
 STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="classic_LR") {
-  
+
   starttime <- st@requestedStarttime
   endtime <- st@requestedEndtime
   
@@ -56,9 +56,15 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
     if (length(trace) <= (nlta+nsta)) {
       next
     }
-    
+
     # Get a vector of STALTA values
-    stalta <- STALTA(trace, staSecs, ltaSecs, algorithm, demean, detrend, taper, increment)
+    if (algorithm == "classic_LR") { # attempt to reduce memory usage
+      n_sta <- staSecs * trace@stats@sampling_rate
+      n_lta <- ltaSecs * trace@stats@sampling_rate
+      stalta <- seismicRoll::roll_stalta((as.numeric(pracma::detrend(trace@data, tt='linear')))^2, n_sta, n_lta, increment)
+    } else {
+      stalta <- STALTA(trace, staSecs, ltaSecs, algorithm, demean, detrend, taper, increment)
+    }
 
     stalta[is.infinite(stalta)] <- NA  # when result blows up to infinity, replace with NA
 
@@ -76,7 +82,7 @@ STALTAMetric <- function(st, staSecs=3, ltaSecs=30, increment=1, algorithm="clas
       maxSTALTA <- traceMaxSTALTA
       eventTime <- traceEventTime
     }
-    
+
   }
   
   # Create and return a list of Metric objects

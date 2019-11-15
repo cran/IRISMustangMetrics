@@ -5,6 +5,7 @@
 import(methods)     # for methods used in defining S4 classes
 import(IRISSeismic)
 import(stringr)
+import(pracma)
 if(utils::packageVersion("dplyr") >= "0.5.0"){
   importFrom(dplyr,everything)
 }

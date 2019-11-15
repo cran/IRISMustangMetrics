@@ -93,7 +93,7 @@ in the dataframe.
 
 %% max preformatted length ---------------------------------------------------
 \examples{
-  \dontrun{
+ \dontrun{
 # Open a connection to IRIS DMC webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 

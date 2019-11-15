@@ -28,6 +28,13 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.3.0
+  \itemize{
+    \item{modifies PSD metrics for edge case involving metadata and trace start times}
+    \item{adds noCorrection option to PSDMetric, if noCorrection=TRUE it only returns uncorrected
+          PSDs and not corrected PSD or PSD-derived metrics; default noCorrection=FALSE}
+  }
+
   version 2.2.0
   \itemize{
     \item{removes dead_channel_exp, metric has been retired}

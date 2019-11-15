@@ -14,7 +14,8 @@ metrics based on PSDs.
 PSDMetric(st,
           linLoPeriod=4/(st@traces[[1]]@stats@sampling_rate),
           linHiPeriod=100,
-          evalresp=NULL)
+          evalresp=NULL,
+          noCorrection=FALSE)
 }
 
 \arguments{
@@ -22,6 +23,8 @@ PSDMetric(st,
   \item{linLoPeriod}{low end of the period band use for calculating the linear dead channel metric}
   \item{linHiPeriod}{high end of the period band use for calculating the linear dead channel metric}
   \item{evalresp}{dataframe of freq, amp, phase information matching output of \code{getEvalresp}, optional}
+  \item{noCorrection}{boolean (default=FALSE), TRUE=only generate list of PSDs uncorrected for instrument response;
+                      FALSE=generate list of uncorrected PSDs, list of corrected PSDs, dataframe of PDF values,and PSD-derived metrics}
 }
 
 \details{

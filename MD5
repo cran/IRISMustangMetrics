@@ -1,12 +1,12 @@
-8d1bd5a0a62d67148cd6f871237a7749 *DESCRIPTION
-3d452902052180baf967b87db3dcd2f4 *NAMESPACE
+6a758b5e87a90766a4809579915d1652 *DESCRIPTION
+8a990786d819b3106c741d08eefb439e *NAMESPACE
 9a31a5620d1756788954b39e3c8695f7 *R/BSSUtils.R
 6a33d5c7edd26f1bdb00fe7a200dcec9 *R/Class-Metric.R
 63b48e450a158326dd909cf3ec190d51 *R/DCOffsetTimesMetric.R
 60c763cab434fed918e394fd82ce1baa *R/ISPAQUtils.R
-d3e1eb1025fb14f6ee4e9c6cc52e816a *R/PSDMetric.R
+0b1c6c117cd3b17803aaecd02b179fdd *R/PSDMetric.R
 592e3478e5432b04c2bf7c439f6f6e68 *R/SNRMetric.R
-e8cc57e83287029647918609204d04c3 *R/STALTAMetric.R
+28ed8ef0f3c585d22d464a30b05c4f5f *R/STALTAMetric.R
 2ff1e70bf7b434eb0ddf0c6e164e7cb1 *R/basicStatsMetric.R
 447cfba7a06a3431b2fbc16d39bd233b *R/correlationMetric.R
 f53bcd3d9068f128f133e76d6d659e6a *R/crossCorrelationMetric.R
@@ -18,9 +18,9 @@ ab48f6856f8e7b17c81b5a8c150e5372 *R/spikesMetric.R
 52b198377988d585f3901d3f1ab95b75 *R/upDownTimesMetric.R
 cbe2747ba2435445e9adb8f302a7c410 *man/DCOffsetTimesMetric.Rd
 70d3c80abb63d08321c16db46c5d9252 *man/GeneralValueMetric-class.Rd
-458399c2680781184f12c45b3d4976b6 *man/IRISMustangMetrics-package.Rd
+13073a85fe4247aa6a7f4e162845ce5f *man/IRISMustangMetrics-package.Rd
 e3dabbce3ecd4031a2bfa212964f3e1e *man/MultipleTimeValueMetric-class.Rd
-197a6ffe992c53fe58e3f95a40b43e2c *man/PSDMetric.Rd
+a4b9fda904a1ef5a16a4286ccb284b82 *man/PSDMetric.Rd
 38f1ef516dfd230c7a68bec358796dc2 *man/SNRMetric.Rd
 ef6455339177520cae2d926b0afc63b4 *man/STALTAMetric.Rd
 ca38676a6c386fb47478147f1596c869 *man/SingleValueMetric-class.Rd
@@ -38,7 +38,7 @@ afd5119c5aa9b9b12e6a76f5510c348a *man/gapsMetric.Rd
 c61aecf0517a730bd867408ff2177bde *man/getMetricsXml.Rd
 5e9805f3afc63f4f69ce82a515f6d846 *man/getMustangMetrics.Rd
 e2f34d9ba3611b3b9c73710af21168ab *man/getPsdMetrics.Rd
-e880a85afda9d63608a5ca33f1b595d2 *man/getSingleValueMetrics.Rd
+00509152f9cae04d7d56a90a767fad9b *man/getSingleValueMetrics.Rd
 9240ebe49e9ba49f8009916915a60cdd *man/metricList2DF.Rd
 b7ba0eafbe41c7010870c97a5d589306 *man/metricList2DFList.Rd
 03ff3ab79dcd200ede641111603fddcf *man/metricList2Xml.Rd
