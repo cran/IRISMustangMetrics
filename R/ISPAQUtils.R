@@ -208,6 +208,39 @@ getMetricFunctionMetadata <- function() {
       "streamCount": 1, 
       "speed": "fast"
     }, 
+    "range": {
+      "businessLogic": "simple",
+      "fullDay": true,
+      "outputType": "GeneralValue",
+      "elementNames": ["value"],
+      "metrics": [
+        "max_range"
+        ],
+      "streamCount": 1,
+      "speed": "slow"
+    },
+    "sampleRateChannel": {
+      "businessLogic": "sampleRateChannel",
+      "fullDay": true,
+      "outputType": "GeneralValue",
+      "elementNames": ["value"],
+      "metrics": [
+        "sample_rate_channel",
+        ],
+      "streamCount": 1,
+      "speed": "fast"
+    },
+    "sampleRateResp": {
+      "businessLogic": "sampleRateChannel",
+      "fullDay": true,
+      "outputType": "GeneralValue",
+      "elementNames": ["value"],
+      "metrics": [
+        "sample_rate_resp"
+        ],
+      "streamCount": 1,
+      "speed": "fast"
+    },
     "STALTA": {
       "businessLogic": "simple", 
       "fullDay": true, 

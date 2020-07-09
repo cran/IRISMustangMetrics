@@ -28,10 +28,15 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.0
+  \itemize{
+    \item{adds new metrics sample_rate_resp, sample_rate_channel, max_range}
+  }
+
   version 2.3.0
   \itemize{
     \item{modifies PSD metrics for edge case involving metadata and trace start times}
-    \item{adds noCorrection option to PSDMetric, if noCorrection=TRUE it only returns uncorrected
+    \item{adds noCorrection option to PSDMetric, if noCorrection=TRUE it only returns uncorrected 
           PSDs and not corrected PSD or PSD-derived metrics; default noCorrection=FALSE}
   }
 
