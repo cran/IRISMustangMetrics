@@ -28,6 +28,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.1
+  \itemize{
+    \item{fix for max_range where trace length not evenly divided by window length}
+    \item{max_range now rounds window*samplerate and increment*samplerate to integer values}
+    \item{corrects typo error in ISPAQUtils.R}
+  }
   version 2.4.0
   \itemize{
     \item{adds new metrics sample_rate_resp, sample_rate_channel, max_range}

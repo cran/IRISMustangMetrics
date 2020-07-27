@@ -225,13 +225,13 @@ getMetricFunctionMetadata <- function() {
       "outputType": "GeneralValue",
       "elementNames": ["value"],
       "metrics": [
-        "sample_rate_channel",
+        "sample_rate_channel"
         ],
       "streamCount": 1,
       "speed": "fast"
     },
     "sampleRateResp": {
-      "businessLogic": "sampleRateChannel",
+      "businessLogic": "sampleRateResp",
       "fullDay": true,
       "outputType": "GeneralValue",
       "elementNames": ["value"],

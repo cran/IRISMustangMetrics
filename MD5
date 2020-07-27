@@ -1,9 +1,9 @@
-db5fd619c26f25b5748589f5088352f5 *DESCRIPTION
+68914fae67bf2053306d299516cfe679 *DESCRIPTION
 4af661d2a43b9fc04e9501b7dfbec13c *NAMESPACE
 9a31a5620d1756788954b39e3c8695f7 *R/BSSUtils.R
 6a33d5c7edd26f1bdb00fe7a200dcec9 *R/Class-Metric.R
 63b48e450a158326dd909cf3ec190d51 *R/DCOffsetTimesMetric.R
-863172ef912762afdd6e906ea57e2451 *R/ISPAQUtils.R
+140d2fc9f78e943a9770a92dd7380909 *R/ISPAQUtils.R
 0b1c6c117cd3b17803aaecd02b179fdd *R/PSDMetric.R
 592e3478e5432b04c2bf7c439f6f6e68 *R/SNRMetric.R
 28ed8ef0f3c585d22d464a30b05c4f5f *R/STALTAMetric.R
@@ -12,7 +12,7 @@ db5fd619c26f25b5748589f5088352f5 *DESCRIPTION
 f53bcd3d9068f128f133e76d6d659e6a *R/crossCorrelationMetric.R
 13d66bf827ec29530960aaf4359b7d3b *R/dailyDCOffsetMetric.R
 6518f90de9ff9bda607a23cddf099dd0 *R/gapsMetric.R
-6766c63f14988fb66a2c7c1d9ff5226b *R/maxRangeMetric.R
+791b7114abf24c9705d0b7c13e71aec1 *R/maxRangeMetric.R
 9749fba410e85be8dad0b8704ea29a64 *R/sampleRateChannelMetric.R
 0881748d9687995218e7c7e4b4cd92a1 *R/sampleRateRespMetric.R
 ab48f6856f8e7b17c81b5a8c150e5372 *R/spikesMetric.R
@@ -21,7 +21,7 @@ ab48f6856f8e7b17c81b5a8c150e5372 *R/spikesMetric.R
 52b198377988d585f3901d3f1ab95b75 *R/upDownTimesMetric.R
 cbe2747ba2435445e9adb8f302a7c410 *man/DCOffsetTimesMetric.Rd
 70d3c80abb63d08321c16db46c5d9252 *man/GeneralValueMetric-class.Rd
-25ca1a51673edbe8447cecc177577e95 *man/IRISMustangMetrics-package.Rd
+9a95ac7b8409d697e1993f6915deb09b *man/IRISMustangMetrics-package.Rd
 e3dabbce3ecd4031a2bfa212964f3e1e *man/MultipleTimeValueMetric-class.Rd
 a4b9fda904a1ef5a16a4286ccb284b82 *man/PSDMetric.Rd
 38f1ef516dfd230c7a68bec358796dc2 *man/SNRMetric.Rd
