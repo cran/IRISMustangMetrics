@@ -61,8 +61,13 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
   # evalresp fap spectra.  Spectra had previously been calculated inside this
   # function, but since we are now rotating horizontal channels for the secondary 
   # instrument to match those of the primary, the spectra must also be rotated
-  # before being passed.  This functionality is now in the generateMetrics_transferFunction
-  # function (see generateMetrics_transferFunction.R) 
+  # before being passed.  This functionality is now in 
+  # IRISMustangUtils::generateMetrics_transferFunction 
+  # (the IRISMustangUtils package is not available on CRAN at this time)
+  #
+  # The evalresp input expected by the transferFunctionMetric can be generated using
+  # the IRISSeismic::transferFunctionSpectra function (IRISSeismic 1.6.0+). 
+  # However, this will not perform rotation if any is needed.
   #
   # I have also modified phase difference reporting so that its sign is preserved. 
   #

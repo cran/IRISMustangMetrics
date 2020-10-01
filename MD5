@@ -1,9 +1,9 @@
-68914fae67bf2053306d299516cfe679 *DESCRIPTION
+c53ec4e2d64a3dd7632ea270ab07f716 *DESCRIPTION
 4af661d2a43b9fc04e9501b7dfbec13c *NAMESPACE
 9a31a5620d1756788954b39e3c8695f7 *R/BSSUtils.R
 6a33d5c7edd26f1bdb00fe7a200dcec9 *R/Class-Metric.R
 63b48e450a158326dd909cf3ec190d51 *R/DCOffsetTimesMetric.R
-140d2fc9f78e943a9770a92dd7380909 *R/ISPAQUtils.R
+e84af56343b601efe00e8a50a49679ce *R/ISPAQUtils.R
 0b1c6c117cd3b17803aaecd02b179fdd *R/PSDMetric.R
 592e3478e5432b04c2bf7c439f6f6e68 *R/SNRMetric.R
 28ed8ef0f3c585d22d464a30b05c4f5f *R/STALTAMetric.R
@@ -17,15 +17,15 @@ f53bcd3d9068f128f133e76d6d659e6a *R/crossCorrelationMetric.R
 0881748d9687995218e7c7e4b4cd92a1 *R/sampleRateRespMetric.R
 ab48f6856f8e7b17c81b5a8c150e5372 *R/spikesMetric.R
 4225b3c39d9523c5c449ba71fbb8873f *R/stateOfHealthMetric.R
-7e9cec457d36dc8e84d3bff788479231 *R/transferFunctionMetric.R
+99767927a90a3950ddba6cebc01a2c87 *R/transferFunctionMetric.R
 52b198377988d585f3901d3f1ab95b75 *R/upDownTimesMetric.R
 cbe2747ba2435445e9adb8f302a7c410 *man/DCOffsetTimesMetric.Rd
 70d3c80abb63d08321c16db46c5d9252 *man/GeneralValueMetric-class.Rd
-9a95ac7b8409d697e1993f6915deb09b *man/IRISMustangMetrics-package.Rd
+0739829bca688b57f9a26957da8b6f39 *man/IRISMustangMetrics-package.Rd
 e3dabbce3ecd4031a2bfa212964f3e1e *man/MultipleTimeValueMetric-class.Rd
 a4b9fda904a1ef5a16a4286ccb284b82 *man/PSDMetric.Rd
 38f1ef516dfd230c7a68bec358796dc2 *man/SNRMetric.Rd
-ef6455339177520cae2d926b0afc63b4 *man/STALTAMetric.Rd
+87f070e62c4fc2a600b22f386a40db08 *man/STALTAMetric.Rd
 ca38676a6c386fb47478147f1596c869 *man/SingleValueMetric-class.Rd
 6e4086196a1ba858fb56b7805420c557 *man/SpectrumMetric-class.Rd
 341fc36b0ee266dcceeceb39642ad3f4 *man/basicStatsMetric.Rd
@@ -53,5 +53,5 @@ c2cadbf7606f4bc7218049c519085847 *man/saveMetricList.Rd
 b7aa109c5a9dfc051218fd63ac02add5 *man/spikesMetric.Rd
 fb7ea006605771917013aad649398ffc *man/stateOfHealthMetric.Rd
 470cd3049039e6f740b04242c6509f05 *man/timesMetric2Xml.Rd
-ea2fd45ecce2484f37812de41ca05522 *man/transferFunctionMetric.Rd
+eaddc1858a70e1ded9b9be07e4c58aa6 *man/transferFunctionMetric.Rd
 f5f21b17fb1cd31849283d9faf6d8299 *man/upDownTimesMetric.Rd

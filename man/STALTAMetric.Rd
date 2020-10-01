@@ -52,9 +52,9 @@ name is \code{max_stalta}.
 }
 
 \references{
-\href{http://en.wikipedia.org/wiki/First_break_picking}{First break picking} (Wikipedia)
+\href{https://en.wikipedia.org/wiki/First_break_picking}{First break picking} (Wikipedia)
 
-\href{http://www.crewes.org/ForOurSponsors/ConferenceAbstracts/2009/CSEG/Wong_CSEG_2009.pdf}{Automatic time-picking of first arrivals on noisy microseismic data} (Wong et. al. 2009)
+\href{https://www.crewes.org/ForOurSponsors/ConferenceAbstracts/2009/CSEG/Wong_CSEG_2009.pdf}{Automatic time-picking of first arrivals on noisy microseismic data} (Wong et. al. 2009)
 
 \href{http://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf}{Automatic first-breaks picking: New strategies and algorithms} (Sabbione and Velis 2010)
 )

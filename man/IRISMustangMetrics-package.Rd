@@ -8,7 +8,7 @@
 
 \description{
 This package provides S4 classes and functions for calculating metrics from seismological 
-data available from the IRIS Data Management Center (DMC) (\url{http://www.iris.edu/dms/nodes/dmc/}).
+data available from the IRIS Data Management Center (DMC) (\url{http://ds.iris.edu/ds/nodes/dmc/}).
 This package is part of the MUSTANG project and is intended for DMC internal use only.
 }
 
@@ -28,6 +28,10 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.2
+  \itemize{
+    \item{minor modification to ISPAQUtils.R for sample_rate_resp, sample_rate_channel}
+  }
   version 2.4.1
   \itemize{
     \item{fix for max_range where trace length not evenly divided by window length}

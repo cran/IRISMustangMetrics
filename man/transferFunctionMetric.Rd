@@ -95,21 +95,13 @@ The metricList generated for these two-channel metrics will have a SNCL code of 
 iris <- new("IrisClient", debug=TRUE)
 
 # Get seismic data
-starttime <- as.POSIXct("2011-05-01", tz="GMT")
+starttime <- as.POSIXct("2011-05-01 12:00:00", tz="GMT")
 endtime <- starttime + 3600
-# These values are specific to two 40 sps channels
-minfreq <- 0.005255603
-maxfreq <- 19.7403
-nfreq <- 96
-units <- 'def'
-output <- 'fap'
 
-st1 <- getDataselect(iris,"CI","PASC","00","BHZ",starttime,endtime)
-st2 <- getDataselect(iris,"CI","PASC","10","BHZ",starttime,endtime)
-evalresp1 <- getEvalresp(iris, "CI", "PASC", "00", "BHZ", starttime, 
-                         minfreq, maxfreq, nfreq, units, output)
-evalresp2 <- getEvalresp(iris, "CI", "PASC", "10", "BHZ", starttime, 
-                         minfreq, maxfreq, nfreq, units, output)
+st1 <- getDataselect(iris,"CI","PASC","00","BHZ",starttime,endtime,inclusiveEnd=FALSE)
+st2 <- getDataselect(iris,"CI","PASC","10","BHZ",starttime,endtime,inclusiveEnd=FALSE)
+evalresp1 <- IRISSeismic::transferFunctionSpectra(st1,40)
+evalresp2 <- IRISSeismic::transferFunctionSpectra(st2,40)
 
 # Calculate metrics
 metricList <- transferFunctionMetric(st1,st2,evalresp1,evalresp2)
