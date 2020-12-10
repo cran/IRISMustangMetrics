@@ -93,12 +93,11 @@ iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2016-08-01", tz="GMT")
 endtime <- starttime + 30*24*3600
-metricName <- "sample_max,sample_mean,orientation_check"
+metricName <- "orientation_check"
 
 # Get the measurement dataframe
-juneStats <- getMustangMetrics(iris,"IU","ANMO","","BH[12Z]",
-                                        starttime,endtime,metricName)
-
-print(juneStats)
+juneStats <- tryCatch(getMustangMetrics(iris,"IU","ANMO","","BH[12Z]",starttime,endtime,metricName),
+                      error=function(e) {message(e)})
+juneStats
 }
 \keyword{ webservices }

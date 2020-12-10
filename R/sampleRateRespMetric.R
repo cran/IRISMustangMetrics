@@ -9,6 +9,8 @@
 #
 #   - sample_rate_resp
 #
+################################################################################
+
 sampleRateRespMetric <- function(st, resp_pct=15, norm_freq=NULL, evalresp=NULL) {
   
   starttime <- st@requestedStarttime
@@ -30,13 +32,18 @@ sampleRateRespMetric <- function(st, resp_pct=15, norm_freq=NULL, evalresp=NULL)
     }
     if (is.null(norm_freq)) { # if metadata sample rate or normalized frequency not provided, go to IRIS web services
        av <- getChannel(iris,network,station,location,channel,st@traces[[1]]@stats@starttime, st@traces[[1]]@stats@endtime)
+       norm_freq <- av$scalefreq
     }
   }
 
   # Calculate sample_rate_resp metric
  
   if (is.null(norm_freq)) {
-     norm_freq <- av$scalefreq
+    stop("sampleRateRespMetrics: normalization frequency is null")
+  }
+
+  if (norm_freq == 0 ) {
+    stop("sampleRateRespMetrics: normalization frequency is 0")
   }
   
   # Retrieve 100 frequency samples per decade for the response
@@ -44,6 +51,10 @@ sampleRateRespMetric <- function(st, resp_pct=15, norm_freq=NULL, evalresp=NULL)
   maxf <- 10*mseed_rate
   nf <- ceiling(log10(maxf/minf)*100)
   units <- 'def'
+
+  if (minf >= maxf) {
+    stop("sampleRateRespMetrics: minimum frequency calculated from the normalization frequency is greater than or equal to the maximum frequency calculated from the miniSEED sample rate")
+  }
   
   colNames <- c("frequency","amp", "dAdf")
   colClasses <- c("character","character","character")

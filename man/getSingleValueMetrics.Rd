@@ -51,6 +51,9 @@ Error returns from the BSS will stop evaluation and generate an error message.
 Most MUSTANG metrics are single valued and can be retrieved with \code{getSingleValueMetrics()}. Examples
 of multi-valued metrics that cannot be returned with this function include "asl_coherence", "orientation_check",
 and "transfer_function".
+
+\code{getMustangMetrics()} is a similar function that will return values for all metrics, not just single valued ones. It is the 
+preferred method of retrieving MUSTANG metric values.
 }
 
 \value{

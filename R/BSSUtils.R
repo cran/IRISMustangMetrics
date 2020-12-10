@@ -549,65 +549,78 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   # Get data from the measurements webservice
   # NOTE:  RCurl::getURLContent returns a binary objected based on the "resulting HTTP  header's Content-Type field."
   # NOTE:  Use RCurl::getURL to return data as character.
-  result <- try( measurementsText <- RCurl::getURL(url, useragent=obj@useragent),
+  h <-  RCurl::basicTextGatherer()
+  result <- try( measurementsText <- RCurl::getURL(url, useragent=obj@useragent,
+                 .opts = list(headerfunction = h$update,followlocation = TRUE, low.speed.time=300, low.speed.limit=1, connecttimeout=300)),
                  silent=TRUE)
   
   # Handle error response
-  if (class(result)[1] == "try-error" ) {
-    
-    err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
-      stop(paste("getSingleValueMetrics.IrisClient: URL Not Found.",url))
-    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
-      stop(paste("getSingleValueMetrics.IrisClient: Couldn't connect to host.",url))
+  if (class(result) == "try-error" ) {
+       err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
+       err_msg <- gsub("\n","",err_msg)
+       stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+  }
+
+  result <- try(header <- RCurl::parseHTTPHeader(h$value()))
+  if (class(result) == "try-error" ) {
+       err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
+       err_msg <- gsub("\n","",err_msg)
+       stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+  }
+
+  if (header["status"] != "200" && header["status"] != "204"  && header["status"] != "404" ) {
+    err_msg <- measurementsText
+    if (stringr::str_detect(err_msg, regex("Not Found",ignore_case=TRUE))) {
+        stop(paste("getSingleValueMetrics.IrisClient: URL Not Found"))
+    } else if (stringr::str_detect(err_msg, regex("couldn't connect to host",ignore_case=TRUE))) {
+        stop(paste("getSingleValueMetrics.IrisClient: Couldn't connect to host"))
+    } else if (stringr::str_detect(err_msg, regex("cannot open the connection",ignore_case=TRUE))) {
+        stop(paste("getSingleValueMetrics.IrisClient: Cannot open connection"))
+    } else if (stringr::str_detect(err_msg, regex("operation too slow",ignore_case=TRUE))) {
+        stop(paste("getSingleValueMetrics.IrisClient: The query timed out"))
     } else {
-      stop(paste("getSingleValueMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url)) 
+        stop(paste("getSingleValueMetrics.IrisClient: Unexpected http status code",header["status"],",",header["statusMessage"]))
     }
-  } else {
+  }
+
+  lines <- unlist(stringr::str_split(measurementsText,"\\n"))
+
+  # Handle error messages coming directly from the BSS
+  if (any(stringr::str_detect(tolower(lines),"no targets were found"))) {
+      stop(paste("getSingleValueMetrics.IrisClient:", "No targets were found"))
+  } else if (any(stringr::str_detect(tolower(lines),"404 page not found"))) {
+      stop(paste("getSingleValueMetrics.IrisClient: URL not found"))
+  } else if (any(stringr::str_detect(tolower(lines),"404 not found"))) {
+      stop(paste("getSingleValueMetrics.IrisClient: URL not found"))
+  } else if (any(stringr::str_detect(tolower(lines),"No data found"))) {
+      stop(paste("getSingleValueMetrics.IrisClient: No data found"))
+  } else if (any(stringr::str_detect(tolower(lines),"timeoutexception"))) {
+      stop(paste("getSingleValueMetrics.IrisClient:","The query timed out."))
+  } else if (any(stringr::str_detect(tolower(lines),"slow"))) {
+      stop(paste("getSingleValueMetrics.IrisClient:","The query timed out."))
+  } else if (any(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))) {
+      next_index <- which(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))+1
+      err_msg <- gsub("</p>|<p>|&#039;","",lines[next_index])
+      stop(paste("getSingleValueMetrics.IrisClient:",stringr::str_trim(err_msg)))
+  } else if (any(stringr::str_detect(tolower(lines),"error report"))) {
+      pattern_match <- regmatches(lines, regexec("description.*?</u>",lines))[[1]][1]
+      if (!is.na(pattern_match)){
+          err_msg <-  gsub("description</b> <u>","",pattern_match)
+          err_msg <-  gsub("</u>","",err_msg)
+          stop(paste("getSingleValueMetrics.IrisClient:",stringr::str_trim(err_msg)))
+      } else {
+          stop(paste("getSingleValueMetrics.IrisClient:","Unexpected error"))
+      }
+  } 
+
     
-    # Handle error messages coming directly from the BSS
-    # NOTE:  Encountered a situation where measurementsText had more than one element
-    lines <- unlist(stringr::str_split(measurementsText,"\\n"))
-
-    if ( stringr::str_detect(lines[1],"Exception") ) {
-      err_msg <- lines[1]
-      stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
-    } else if (stringr::str_detect(tolower(lines[1]),"error report")) {
-      pattern <- "description.*?</u>"
-      pattern_match <- regmatches(lines, regexec(pattern,lines))[[1]][1]
-      if (!is.na(pattern_match)){
-         err_msg <-  gsub("description</b> <u>","",pattern_match)
-         err_msg <-  gsub("</u>","",err_msg)
-         stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
-      } else {
-         stop(paste("getSingleValueMetrics.IrisClient:",lines[2]))
-      }
-    } else if (stringr::str_detect(tolower(measurementsText),"<h1>")) {
-      pattern <- "<h1>.*?</h1>"
-      pattern_match <- regmatches(measurementsText, regexec(pattern,measurementsText))[[1]][1]
-      if (!is.na(pattern_match)){
-         err_msg <-  gsub("<h1>\\s+","",pattern_match)
-         err_msg <-  gsub("\\s+</h1>","",err_msg)
-         stop(paste("getSingleValueMetrics.IrisClient:",err_msg))
-      } else {
-         stop(paste("getSingleValueMetrics.IrisClient:",measurementsText))
-      }
-    }
-  }
-
-  if(nchar(measurementsText)==0){
-    stop(paste("getSingleValueMetrics.IrisClient found no measurements for",metricName))
-  }
-  
   # No errors so proceed
   
   # Dataframes will be returned in a list
   dataframeList <- list()
   
   # NOTE:  The metrics will not necessarily be returned in the order requested.
-  
   # TODO:  Find alternate solution to hardcoded metric names.
-  
   # Metric names returned with format=text do not match the requested metric names
   # NOTE:  Copied names from http://service.iris.edu/mustang/measurements/1
   # NOTE:  and did 1 minute of vim munging to generate this list.
@@ -656,7 +669,12 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   
   # length of chunks represents the number of metrics represented
   for (i in seq(length(chunks))) {
-    
+
+    lines <- unlist(stringr::str_split(chunks[i],"\\n"))
+    if (is.na(lines[2]) || !(stringr::str_detect(lines[2],"lddate"))) {
+       stop(paste("getSingleValueMetrics.IrisClient:","Unexpected query return."))
+    }
+
     # Create a dataframe from the text
     DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i])
     
@@ -833,96 +851,15 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     stop(paste('metricName should be a single string with comma separated metric names, not a vector of metric names.'))
   }
 
-  # Create the BSS URL
-  url2 <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
-
-  if (is.null(url)) {
-    url <- paste0(strsplit(url2,"\\?")[[1]][1],"?")
-  }
-
-  # Get data from the measurements webservice
-  # NOTE:  RCurl::getURLContent returns a binary objected based on the "resulting HTTP  header's Content-Type field."
-  # NOTE:  Use RCurl::getURL to return data as character.
-  result <- try( measurementsText <- RCurl::getURL(url2, useragent=obj@useragent),
-                 silent=TRUE)
-
-  # Handle error response
-  if (class(result)[1] == "try-error" ) {
-    err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
-      stop(paste("getMustangMetrics.IrisClient: URL Not Found.",url2))
-    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
-      stop(paste("getMustangMetrics.IrisClient: Couldn't connect to host.",url2))
-    } else {
-      stop(paste("getMustangMetrics.IrisClient: ",stringr::str_replace_all(err_msg,"[\r\n]",""),".",url2))
-    }
-  } else {
-    # Handle error messages coming directly from the BSS
-    # NOTE:  Encountered a situation where measurementsText had more than one element
-    lines <- unlist(stringr::str_split(result,"\\n"))
-    lines <- trimws(lines)
-    results <- gsub("\\n","",result)
-
-    if (stringr::str_detect(lines[1],"Exception") ) {
-      err_msg <- lines[1]
-      stop(paste("getMustangMetrics.IrisClient:",err_msg))
-
-    } else if (any(stringr::str_detect(lines,"No targets were found"))) {
-      stop(paste("getMustangMetrics.IrisClient:", "No targets were found"))
-
-    } else if (any(stringr::str_detect(tolower(lines),"404 page not found"))) {
-      stop(paste("getMustangMetrics.IrisClient: URL not found", url2))
-
-    } else if (any(stringr::str_detect(tolower(lines),"404 not found"))) {
-      stop(paste("getMustangMetrics.IrisClient: URL not found", url2))
-
-    } else if (any(stringr::str_detect(tolower(lines),"No data found"))) {
-      stop(paste("getMustangMetrics.IrisClient: No data found", url2))
-
-    } else if (any(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))) {
-      next_index <- match("<h2>MUSTANG Error</h2>",lines)+1
-      err_msg <- gsub("</p>","",lines[next_index])
-      err_msg <- gsub("<p>","",err_msg)
-      err_msg <- gsub("&#039;","",err_msg)
-      stop(paste("getMustangMetrics.IrisClient:",err_msg))
-
-    } else if (stringr::str_detect(tolower(results),"error report")) {
-      pattern <- "description.*?</u>"
-      pattern_match <- regmatches(results, regexec(pattern,results))[[1]][1]
-      if (!is.na(pattern_match)){
-         err_msg <-  gsub("description</b> <u>","",pattern_match)
-         err_msg <-  gsub("</u>","",err_msg)
-         stop(paste("getMustangMetrics.IrisClient:",err_msg))
-      } else {
-         stop(paste("getMustangMetrics.IrisClient:",results))
-      }
-
-    } else if (is.na(stringr::str_detect(lines[2],"lddate"))) {
-         stop(paste("getMustangMetrics.IrisClient:",results))
-    } else if (!stringr::str_detect(lines[2],"lddate")) {
-         stop(paste("getMustangMetrics.IrisClient:",results))
-    }
-      
-  }
- 
-  # No errors so proceed
-
-  # Dataframes will be returned in a list
-  dataframeList <- list()
-
   # NOTE:  The metrics will not necessarily be returned in the order requested.
-
   # TODO:  Find alternate solution to hardcoded metric names.
   # Metric names returned with format=text do not match the requested metric names
-  # NOTE:  Copied names from http://service.iris.edu/mustang/measurements/1
-  # NOTE:  and did 1 minute of vim munging to generate this list.
   convertName <- list("Amplifier Saturation Metric"="amplifier_saturation",
                       "Calibration Signal Metric"="calibration_signal",
                       "Clock Locked Metric"="clock_locked",
                       "Cross Talk Metric"="cross_talk",
                       "Data Latency Metric"="data_latency",
                       "Dc Offset Metric"="dc_offset",
-                      "DC Offset Times Metric"="dc_offset_times",
                       "Digital Filter Charging Metric"="digital_filter_charging",
                       "Digitizer Clipping Metric"="digitizer_clipping",
                       "Event Begin Metric"="event_begin",
@@ -945,6 +882,8 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                       "Sample Mean Metric"="sample_mean",
                       "Sample Median Metric"="sample_median",
                       "Sample Min Metric"="sample_min",
+                      "Sample Rate Channel"="sample_rate_channel",
+                      "Sample Rate Resp"="sample_rate_resp",
                       "Sample RMS"="sample_rms",
                       "Sample SNR"="sample_snr",
                       "Spikes Metric"="spikes",
@@ -952,10 +891,10 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                       "Station Up Down Times Metric"="station_up_down_times",
                       "Suspect Time Tag Metric"="suspect_time_tag",
                       "Telemetry Sync Error Metric"="telemetry_sync_error",
-                      "Timing Correction Metric"="timing_correction",
                       "Timing Quality Metric"="timing_quality",
                       "Total Latency Metric"="total_latency",
                       "Ts Channel Continuity"="ts_channel_continuity",
+                      "Ts Channel Gap List"="ts_channel_gap_list",
                       "Ts Channel Up Time Metric"="ts_channel_up_time",
                       "Ts Gap Length Metric"="ts_gap_length",
                       "Ts Gap Length Total Metric"="ts_gap_length_total",
@@ -964,22 +903,104 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                       "Ts Num Gaps Metric"="ts_num_gaps",
                       "Ts Num Gaps Total Metric"="ts_num_gaps_total",
                       "Ts Percent Availability Metric"="ts_percent_availability",
-                      "Ts Percent Availability Total Metric"="ts_percent_availability_total",
-                      "Up Down Times Metric"="up_down_times")
+                      "Ts Percent Availability Total Metric"="ts_percent_availability_total")
+
+
+  # Create the BSS URL
+  url2 <- createBssUrl(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
+
+  if (is.null(url)) {
+    url <- paste0(strsplit(url2,"\\?")[[1]][1],"?")
+  }
+
+  # Get data from the measurements webservice
+  # NOTE:  Use RCurl::getURL to return data as character.
+  h <-  RCurl::basicTextGatherer()
+  result <- try( measurementsText <- RCurl::getURL(url2, useragent=obj@useragent,
+                 .opts = list(headerfunction = h$update,followlocation = TRUE, low.speed.time=300, low.speed.limit=1, connecttimeout=300)),
+                 silent=TRUE)
+
+  if (class(result) == "try-error" ) {
+       err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
+       err_msg <- gsub("\n","",err_msg)
+       stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+  }
+
+  result <- try(header <- RCurl::parseHTTPHeader(h$value()))
+  if (class(result) == "try-error" ) {
+       err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
+       err_msg <- gsub("\n","",err_msg)
+       stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+  }
+
+  if (header["status"] != "200" && header["status"] != "204" && header["status"] != "404" ) {
+    err_msg <- measurementsText
+    if (stringr::str_detect(err_msg, regex("Not Found",ignore_case=TRUE))) {
+        stop(paste("getMustangMetrics.IrisClient: URL Not Found"))
+    } else if (stringr::str_detect(err_msg, regex("couldn't connect to host",ignore_case=TRUE))) {
+        stop(paste("getMustangMetrics.IrisClient: Couldn't connect to host"))
+    } else if (stringr::str_detect(err_msg, regex("cannot open the connection",ignore_case=TRUE))) {
+        stop(paste("getMustangMetrics.IrisClient: Cannot open connection"))
+    } else if (stringr::str_detect(err_msg, regex("operation too slow",ignore_case=TRUE))) {
+        stop(paste("getMustangMetrics.IrisClient: The query timed out"))
+    } else {
+        stop(paste("getMustangMetrics.IrisClient: Unexpected http status code",header["status"],",",header["statusMessage"]))
+    }
+  }
+
+  lines <- unlist(stringr::str_split(measurementsText,"\\n"))
+
+    # Handle error messages coming directly from the BSS
+    if (any(stringr::str_detect(tolower(lines),"no targets were found"))) {
+        stop(paste("getMustangMetrics.IrisClient:", "No targets were found"))
+    } else if (any(stringr::str_detect(tolower(lines),"404 page not found"))) {
+        stop(paste("getMustangMetrics.IrisClient: URL not found"))
+    } else if (any(stringr::str_detect(tolower(lines),"404 not found"))) {
+        stop(paste("getMustangMetrics.IrisClient: URL not found"))
+    } else if (any(stringr::str_detect(tolower(lines),"No data found"))) {
+        stop(paste("getMustangMetrics.IrisClient: No data found"))
+    } else if (any(stringr::str_detect(tolower(lines),"timeoutexception"))) {
+        stop(paste("getMustangMetrics.IrisClient:","The query timed out."))
+    } else if (any(stringr::str_detect(tolower(lines),"slow"))) {
+        stop(paste("getMustangMetrics.IrisClient:","The query timed out."))
+    } else if (any(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))) {
+        next_index <- which(stringr::str_detect(lines,"<h2>MUSTANG Error</h2>"))+1
+        err_msg <- gsub("</p>|<p>|&#039;","",lines[next_index])
+        stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+    } else if (any(stringr::str_detect(tolower(lines),"error report"))) {
+        pattern_match <- regmatches(lines, regexec("description.*?</u>",lines))[[1]][1]
+        if (!is.na(pattern_match)){
+            err_msg <-  gsub("description</b> <u>","",pattern_match)
+            err_msg <-  gsub("</u>","",err_msg)
+            stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
+        } else {
+            stop(paste("getMustangMetrics.IrisClient:","Unexpected error"))
+        }
+    } 
+
+  # Dataframes will be returned in a list
+  dataframeList <- list()
+
 
   # Break the text into chunks separated by "\n\n".
   # NOTE:  stringr::str_split uses extended regular expressions and '\' needs to be escaped
+
   chunks <- unlist(stringr::str_split(measurementsText,"\\n\\n"))
 
   # length of chunks represents the number of metrics represented
   for (i in seq(length(chunks))) {
+
+    lines <- unlist(stringr::str_split(chunks[i],"\\n"))
+    if (is.na(lines[2]) || !(stringr::str_detect(lines[2],"lddate"))) {
+       stop(paste("getMustangMetrics.IrisClient:","Unexpected query return."))
+    }   
 
     # Create a dataframe from the text
     result <- try( DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i]),silent=TRUE)
  
     if (class(result)[1] == "try-error" ) {
         err_msg <- geterrmessage()
-        stop(paste("getMustangMetrics.IrisClient: read.csv", err_msg, url2))
+        stop(paste("getMustangMetrics.IrisClient: read.csv", err_msg))
     }
 
 

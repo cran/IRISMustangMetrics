@@ -28,6 +28,11 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.3
+  \itemize{
+    \item(improved error handling for functions that call IRIS web services)
+    \item(additional error handling for sample_rate_resp)
+  }
   version 2.4.2
   \itemize{
     \item{minor modification to ISPAQUtils.R for sample_rate_resp, sample_rate_channel}
@@ -261,11 +266,14 @@ iris <- new("IrisClient", debug=TRUE)
 # Get the seismic data
 starttime <- as.POSIXct("2010-02-27 06:45:00",tz="GMT")
 endtime <- as.POSIXct("2010-02-27 07:45:00",tz="GMT")
-st <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime)
-
-# Apply a metric and show the results
-metricList <- basicStatsMetric(st)
-dummy <- lapply(metricList, show)
+result <- try(st <- getDataselect(iris,"IU","ANMO","00","BHZ",starttime,endtime))
+if (class(result) == "try-error" ) {
+   print(geterrmessage())
+} else {
+   # Apply a metric and show the results
+   metricList <- basicStatsMetric(st)
+   dummy <- lapply(metricList, show)
+}
 }
 
 %% Optional keywords

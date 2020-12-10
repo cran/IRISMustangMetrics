@@ -65,9 +65,10 @@ starttime <- as.POSIXct("2012-01-24", tz="GMT")
 endtime <- as.POSIXct("2012-01-25", tz="GMT")
 
 # Get the measurement XML
-xml <- getMetricsXml(iris,"AK","PIN","","BHZ",
+xml <- tryCatch(getMetricsXml(iris,"AK","PIN","","BHZ",
                           starttime,endtime,metricName="sample_mean",
-                          url="http://service.iris.edu/mustang/measurements/1/query?")
+                          url="http://service.iris.edu/mustang/measurements/1/query?"),
+                error= function(e) {message(e)}) 
 }
 
 \keyword{ webservices }

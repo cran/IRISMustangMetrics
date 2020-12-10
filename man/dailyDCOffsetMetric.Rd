@@ -20,8 +20,8 @@ dailyDCOffsetMetric(df,
 \arguments{
   \item{df}{a dataframe containing \code{sample_mean} values obtained with getSingleValueMetrics()}
   \item{offsetDays}{number of days used in calculating weighting factors}
-  \item{outlierWindow}{window size passed to findOutliers() function in the \pkg{seismic} package}
-  \item{outlierThreshold}{detection threshold passed to findOutliers() function in the \pkg{seismic} package}
+  \item{outlierWindow}{window size passed to findOutliers() function in the \pkg{seismicRoll} package}
+  \item{outlierThreshold}{detection threshold passed to findOutliers() function in the \pkg{seismicRoll} package}
   \item{outputType}{if 1,  return last day of valid values (index= length(index)-floor(outlierWindow/2)); if 0, return all valid values (indices= max(offsetDays, floor(outlierWindow/2): length(index)-floor(outlierWindow/2)) }
 }
 
