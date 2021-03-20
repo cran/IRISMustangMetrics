@@ -28,6 +28,11 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.4
+  \itemize{
+     \item(additional error handling for sample_rate_resp)
+  }
+
   version 2.4.3
   \itemize{
     \item(improved error handling for functions that call IRIS web services)
@@ -275,5 +280,4 @@ if (class(result) == "try-error" ) {
    dummy <- lapply(metricList, show)
 }
 }
-
 %% Optional keywords

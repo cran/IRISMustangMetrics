@@ -84,6 +84,10 @@ sampleRateRespMetric <- function(st, resp_pct=15, norm_freq=NULL, evalresp=NULL)
     stop(paste("sampleRateRespMetrics:","getEvalresp returned all zero values"))
   }
 
+  if(all(is.nan(DF$amp))) {
+    stop(paste("sampleRateRespMetrics:","getEvalresp returned all null values"))
+  }
+
   if (nrow(DF) > 0) {
     dAmp <- with(DF, ( ( as.numeric(DF$amp[-1]) - as.numeric(DF$amp[-length(DF$amp)]) ) / as.numeric(DF$amp[-1]) ) )
     df <- with(DF, ( abs( as.numeric(DF$frequency[-1]) - as.numeric(DF$frequency[-length(DF$frequency)]) ) / as.numeric(DF$frequency[-1]) ) )
