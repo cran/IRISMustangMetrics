@@ -19,7 +19,7 @@ This package is part of the MUSTANG project and is intended for DMC internal use
 }
 
 \author{
-Jonathan Callahan \email{jonathan@mazamascience..com}
+Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \references{
@@ -27,6 +27,12 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 }
 
 \section{History}{
+
+  version 2.4.5
+  \itemize{
+     \item(typo fix for email address and updated link in documentation)
+     \item(improve error handling code to meet CRAN requirements)
+  }
 
   version 2.4.4
   \itemize{

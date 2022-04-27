@@ -43,7 +43,7 @@ upDownTimesMetric <- function(st, min_signal=30, min_gap=60) {
                  silent=TRUE)
 
   # Handle error returns
-  if (class(result)[1] == "try-error" ) {    
+  if (inherits(result,"try-error")) {
     # Write out the xml and stop with an error
     err_msg <- paste("ERROR in upDownTimesMetric(",snclq,",",min_signal,",",min_gap,"): ",geterrmessage(),sep="")
     stop(err_msg) 

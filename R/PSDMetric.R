@@ -128,7 +128,7 @@ PSDMetric <- function(st,
      #if evalresp NULL and trace starttime > PSD starttime, calculate evalresp here using trace starttime+1
 
      if (is.null(evalresp) && st@traces[[1]]@stats@starttime > psdList[[1]]$starttime) {
-         if (class(iris) == "data.frame") {
+         if (inherits(iris,"data.frame")) {
            iris <- new("IrisClient")
          }
          minfreq <- min(psdList[[1]]$freq)
@@ -150,7 +150,7 @@ PSDMetric <- function(st,
 
     result <- try(psdStats <- psdStatistics(psdList, evalresp), silent=TRUE) 
 
-    if (class(result)[1] == "try-error") {
+    if (inherits(result,"try-error")) {
         err_msg <- geterrmessage()
         if ( !stringr::str_detect(err_msg, "psdList2NoiseMatrix: length")) {
              stop(paste("PSDMetrics:", stringr::str_replace_all(err_msg,"[\r\n]",""), snclq))

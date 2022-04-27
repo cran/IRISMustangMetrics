@@ -39,7 +39,7 @@ saveMetricList <- function(metricList,
     filename <- paste(name,"RData",sep=".")
     result <- try( saveReturn <- save(metricList,file=filename),
                    silent=TRUE)
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
       stop(geterrmessage())      
     }
     
@@ -49,22 +49,22 @@ saveMetricList <- function(metricList,
     filename <- paste(name,"xml",sep=".")
     
     # Choose the appropriate data-to-XML conversion
-    if (length(metricList) == 1 && class(metricList[[1]]) == "character") { # For latency which comes preformatted as XML
+    if (length(metricList) == 1 && inherits(metricList[[1]],"character")) { # For latency which comes preformatted as XML
       xml <- metricList[[1]]
-    } else if (class(metricList[[1]]) == "GeneralValueMetric") {
+    } else if (inherits(metricList[[1]],"GeneralValueMetric")) {
       xml <- metricList2Xml(metricList)
-    } else if (class(metricList[[1]]) == "SingleValueMetric") {
+    } else if (inherits(metricList[[1]],"SingleValueMetric")) {
       xml <- metricList2Xml(metricList)    
-    } else if (class(metricList[[1]]) == "SpectrumMetric") {
+    } else if (inherits(metricList[[1]],"SpectrumMetric")) {
       xml <- spectrumMetric2Xml(metricList)
-    } else if (length(metricList) == 1 && class(metricList[[1]]) == "MultipleTimeValueMetric") {
+    } else if (length(metricList) == 1 && inherits(metricList[[1]],"MultipleTimeValueMetric")) {
       xml <- timesMetric2Xml(metricList[[1]])
     } else {
       stop(paste("saveMetricList: metric of class '",class(metricList[[1]]),"' is not recognized.",sep=""))
     }
     
     result <- try( saveReturn <- write(file=filename,xml,append=TRUE), silent=TRUE)
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
       stop(geterrmessage())      
     }
     
@@ -127,8 +127,7 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
                  silent=TRUE)
   
   # Handle error response
-  if (class(result)[1] == "try-error" ) {
-    
+  if (inherits(result,"try-error")) {  
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getBssMetricList.IrisClient: URL Not Found:",url))
@@ -309,8 +308,7 @@ getMetricsXml.IrisClient <- function(obj, network, station, location, channel,
                  silent=TRUE)
   
   # Handle error response
-  if (class(result)[1] == "try-error" ) {
-    
+  if (inherits(result,"try-error")) {  
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getMetricsXml.IrisClient: URL Not Found:",url))
@@ -389,8 +387,7 @@ getLatencyValuesXml.IrisClient <- function(obj, network, station, location, chan
                  silent=TRUE)
   
   # Handle error response
-  if (class(result)[1] == "try-error" ) {
-    
+  if (inherits(result,"try-error")) {  
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getLatencyValuesXml.IrisClient: URL Not Found:",url))
@@ -555,14 +552,14 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
                  silent=TRUE)
   
   # Handle error response
-  if (class(result) == "try-error" ) {
+  if (inherits(result,"try-error")) {
        err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
        err_msg <- gsub("\n","",err_msg)
        stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
   }
 
   result <- try(header <- RCurl::parseHTTPHeader(h$value()))
-  if (class(result) == "try-error" ) {
+  if (inherits(result,"try-error")) {
        err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
        err_msg <- gsub("\n","",err_msg)
        stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
@@ -920,14 +917,14 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
                  .opts = list(headerfunction = h$update,followlocation = TRUE, low.speed.time=300, low.speed.limit=1, connecttimeout=300)),
                  silent=TRUE)
 
-  if (class(result) == "try-error" ) {
+  if (inherits(result,"try-error")) {
        err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
        err_msg <- gsub("\n","",err_msg)
        stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
   }
 
   result <- try(header <- RCurl::parseHTTPHeader(h$value()))
-  if (class(result) == "try-error" ) {
+  if (inherits(result,"try-error")) {
        err_msg <- gsub("Error in function \\(type, msg, asError = TRUE\\)  :","",geterrmessage())
        err_msg <- gsub("\n","",err_msg)
        stop(paste("getMustangMetrics.IrisClient:",stringr::str_trim(err_msg)))
@@ -998,7 +995,7 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
     # Create a dataframe from the text
     result <- try( DF <- utils::read.csv(skip=1, header=TRUE, stringsAsFactors=FALSE, text=chunks[i]),silent=TRUE)
  
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
         err_msg <- geterrmessage()
         stop(paste("getMustangMetrics.IrisClient: read.csv", err_msg))
     }
@@ -1045,17 +1042,17 @@ getGeneralValueMetrics.IrisClient <- function(obj, network, station, location, c
 
     # Convert time strings
     result <- try( DF$starttime <- as.POSIXct(DF$starttime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
         stop(paste("getMustangMetrics.IrisClient: convert starttime",DF$starttime[1], "to as.POSIXct failed"))
     }
 
     result <- try(DF$endtime <- as.POSIXct(DF$endtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
         stop(paste("getMustangMetrics.IrisClient: convert endtime",DF$endtime[1], "to as.POSIXct failed"))
     }
 
     result <- try(DF$loadtime <- as.POSIXct(DF$loadtime, "%Y/%m/%d %H:%M:%OS", tz="GMT"), silent=TRUE)
-    if (class(result)[1] == "try-error" ) {
+    if (inherits(result,"try-error")) {
         stop(paste("getMustangMetrics.IrisClient: convert loadtime", DF$loadtime[1], "to as.POSIXct failed"))
     }
 
@@ -1158,7 +1155,7 @@ getPsdMetrics.IrisClient <- function(obj, network, station, location, channel, s
   result <- try( psdXml <- RCurl::getURL(url, useragent=obj@useragent), silent=TRUE)
   
   # Handle error response
-  if (class(result)[1] == "try-error" ) {
+  if (inherits(result,"try-error")) {
     err_msg <- geterrmessage()
     if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
       stop(paste("getPsdMetrics.IrisClient: URL Not Found:",url))

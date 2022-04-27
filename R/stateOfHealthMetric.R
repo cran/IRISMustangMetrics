@@ -30,7 +30,7 @@ stateOfHealthMetric <- function(st) {
   # Make sure we're working with a single snclq
   unique_ids <- uniqueIds(st)
   if (length(unique_ids) > 1) {
-    stop(paste("basicStatsMetric: Stream has",length(unique_ids),"unique identifiers"))
+    stop(paste("stateOfHealthMetric: Stream has",length(unique_ids),"unique identifiers"))
   }
   snclq <- unique_ids[1]
   

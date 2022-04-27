@@ -243,7 +243,7 @@ setMethod("initialize", "GeneralValueMetric",
             if(!missing(valueStrings)) {
               .Object@valueStrings <- valueStrings
             } else {
-               if(class(elementValues)=="character"){
+               if (inherits(elementValues,"character")) {
                    .Object@valueStrings <- stringr::str_trim(format(elementValues))
                } else {
                    .Object@valueStrings <- format(elementValues, digits=7)
@@ -485,8 +485,7 @@ setMethod("show", signature(object="MultipleTimeValueMetric"), function(object) 
 ################################################################################
 
 metricList2DF <- function(metricList) {
-  input <- class(metricList[[1]])
-  if (input=="SingleValueMetric") { 
+  if (inherits(metricList[[1]],"SingleValueMetric")) {
       # Extract attributes from the list of Metrics
       # NOTE:  use 'sapply' to return a vector as opposed to the list returned by 'lapply'
       snclq <- sapply(metricList, slot, 'snclq')
@@ -535,7 +534,7 @@ metricList2DF <- function(metricList) {
       df$starttime <- as.POSIXct(as.numeric(df$starttime), origin="1970-01-01", tz="GMT")
       df$endtime <- as.POSIXct(as.numeric(df$endtime), origin="1970-01-01", tz="GMT")
       
-  } else if (input=="GeneralValueMetric") {
+  } else if (inherits(metricList[[1]],"GeneralValueMetric")){
       snclq <- sapply(metricList, slot, 'snclq')
       starttime <- as.numeric(sapply(metricList, slot, 'starttime'))
       endtime <- as.numeric(sapply(metricList, slot, 'endtime'))
@@ -664,8 +663,7 @@ metricList2DFList <- function(metricList) {
 ################################################################################
 
 metricList2Xml <- function(metricList) {
-  input <- class(metricList[[1]])
-  if (input=="SingleValueMetric") {
+  if (inherits(metricList[[1]],"SingleValueMetric")) {
 
       returnString <- "<measurements>"
       
@@ -807,7 +805,7 @@ metricList2Xml <- function(metricList) {
       returnString <- paste(returnString,"</measurements>",sep="")
       return(returnString)
 
-  } else if (input=="GeneralValueMetric") {
+  } else if (inherits(metricList[[1]],"GeneralValueMetric")) {
       returnString <- "<measurements>"
 
       # Extract attributes from the list of Metrics
