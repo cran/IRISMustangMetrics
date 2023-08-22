@@ -85,7 +85,7 @@ Note: The dead_channel_exp metric has been removed.
 \href{https://pubs.usgs.gov/of/2005/1438/pdf/OFR-1438.pdf}{Seismic Noise Analysis System Using Power Spectral Density Probability Density Functions} (McNamara and Boaz 2005)
 
 
-\href{https://pubs.er.usgs.gov/publication/ofr93322}{Observations and Modeling of Seismic Background Noise} (Peterson 1993).
+\href{https://pubs.usgs.gov/publication/ofr93322}{Observations and Modeling of Seismic Background Noise} (Peterson 1993).
 }
 
 \author{

@@ -48,7 +48,7 @@ The sampleRateChannelMetric function calculates and returns the following metric
 }
 
 \author{
-Mary Templeton \email{met@iris.washington.edu}
+Mary Templeton \email{mary.templeton@earthscope.org}
 }
 
 \seealso{

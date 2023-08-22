@@ -44,7 +44,7 @@ The metric names is \code{polarity_check}.
 
 \author{
 Jonathan Callahan \email{jonathan@mazamascience.com} (R code),
-Mary Templeton \email{met@iris.washington.edu} (algorithm)
+Mary Templeton \email{mary.templeton@earthscope.org} (algorithm)
 }
 
 \note{

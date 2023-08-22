@@ -56,7 +56,7 @@ The sampleRateMetric function calculates and returns the following metrics:
 }
 
 \author{
-Mary Templeton \email{met@iris.washington.edu}
+Mary Templeton \email{mary.templeton@earthscope.org}
 }
 
 \seealso{

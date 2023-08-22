@@ -37,7 +37,7 @@ the largest difference as the \bold{max_range}.
 }
 
 \author{
-Gillian Sharer \email{gillian@iris.washington.edu}
+Gillian Sharer \email{gillian.sharer@earthscope.org}
 }
 
 %% \note{ }

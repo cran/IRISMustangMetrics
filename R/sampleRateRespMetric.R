@@ -27,7 +27,7 @@ sampleRateRespMetric <- function(st, resp_pct=15, norm_freq=NULL, evalresp=NULL)
   quality <- st@traces[[1]]@stats@quality
 
   if (is.null(norm_freq) || is.null(evalresp)) {
-    if (class(iris) != "IrisClient") {
+    if (!inherits(iris,"IrisClient")) {
        iris <- new("IrisClient") # defaults to fdsnws 
     }
     if (is.null(norm_freq)) { # if metadata sample rate or normalized frequency not provided, go to IRIS web services

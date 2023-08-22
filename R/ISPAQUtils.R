@@ -74,6 +74,7 @@ getMetricFunctionMetadata <- function() {
       "elementNames": null,
       "metrics": [
         "psd_corrected",
+        "psd_uncorrected",
         "pdf_text"       
         ],
       "streamCount": 1,

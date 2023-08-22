@@ -34,7 +34,7 @@ dailyDCOffsetMetric <- function(df,
   
 
   # Sanity checks
-  if (class(df) != "data.frame") {
+  if (!inherits(df,"data.frame")) {
     stop(paste("dailyDCOffsetMetric: Argument 'df' is of class",class(df),". A dataframe is required."))
   }
   if (nrow(df) < 1) {

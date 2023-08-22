@@ -72,7 +72,7 @@ Whenever \code{ms_coherence ~= 1.0}, properly functioning seismometers should ha
 
 \author{
 Jonathan Callahan \email{jonathan@mazamascience.com} (R code),
-Mary Templeton \email{met@iris.washington.edu} (algorithm)
+Mary Templeton \email{mary.templeton@earthscope.org} (algorithm)
 }
 
 \note{

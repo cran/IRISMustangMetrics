@@ -4,12 +4,12 @@
 \alias{IRISMustangMetrics-package}
 \alias{IRISMustangMetrics}
 
-\title{Utilities for calculating seismic metrics from IRIS DMC data}
+\title{Utilities for calculating seismic metrics from EarthScope (formerly IRIS DMC) data}
 
 \description{
 This package provides S4 classes and functions for calculating metrics from seismological 
-data available from the IRIS Data Management Center (DMC) (\url{http://ds.iris.edu/ds/nodes/dmc/}).
-This package is part of the MUSTANG project and is intended for DMC internal use only.
+data available from EarthScope (\url{http://ds.iris.edu/ds/nodes/dmc/}).
+This package is part of the MUSTANG project.
 }
 
 \section{Introduction}{
@@ -28,10 +28,16 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 
 \section{History}{
 
+  version 2.4.6
+  \itemize{
+     \item(updated email addresses)
+     \item(ISPQAUtils, add psd_corrected metric name to allow the ISPAQ tool to return uncorrected psds)
+  }
+
   version 2.4.5
   \itemize{
      \item(typo fix for email address and updated link in documentation)
-     \item(improve error handling code to meet CRAN requirements)
+     \item(updated error handling code to meet CRAN requirements)
   }
 
   version 2.4.4

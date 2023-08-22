@@ -24,7 +24,7 @@ sampleRateChannelMetric <- function(st, channel_pct=1, chan_rate=NULL) {
   quality <- st@traces[[1]]@stats@quality
 
   if (is.null(chan_rate)) {
-    if (class(iris) != "IrisClient") {
+    if (!inherits(iris,"IrisClient")) {
        iris <- new("IrisClient") # defaults to fdsnws 
     }
     if (is.null(chan_rate)) { # if metadata sample rate or normalized frequency not provided, go to IRIS web services
