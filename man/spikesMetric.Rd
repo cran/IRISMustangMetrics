@@ -69,7 +69,7 @@ See the \pkg{seismicRoll} package for documentation on the findOutliers() functi
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

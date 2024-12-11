@@ -26,7 +26,7 @@ sampleRateChannelMetric(st,
 This function retrieves the sample rate of the first trace from a \code{Stream} object and compares 
 it to the metadata channel sample rate passed as \code{chan_rate} to see whether both sample rates agree within 
 \code{channel_pct} percent. If chan_rate is not provided, the code will retrieve a sample rate
-from IRIS web services. 
+from EarthScope web services. 
 
 The sampleRateChannelMetric function calculates and returns the following metrics:
 
@@ -57,7 +57,7 @@ Mary Templeton \email{mary.templeton@earthscope.org}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 starttime <- as.POSIXct("2019-08-01",tz="GMT")

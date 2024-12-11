@@ -88,7 +88,7 @@ processing of a particular metric.  Its meaning will vary from metric to metric.
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

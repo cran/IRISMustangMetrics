@@ -6,7 +6,7 @@
 
 \description{
 The saveMetricList() function allows metrcis to be saved as either .RData files or as XML.
-The XML format is the same as that used by the IRIS DMC MUSTANG database for metric submission.
+The XML format is the same as that used by the EarthScope MUSTANG database for metric submission.
 }
 
 \usage{
@@ -49,7 +49,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

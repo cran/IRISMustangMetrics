@@ -20,7 +20,7 @@ stateOfHealthMetric(st)
 
 \details{
 The miniSEED flags and timing_qual values are described in the SEED manual
-(\url{http://www.fdsn.org/seed_manual/SEEDManual_V2.4.pdf}).
+(\url{https://www.fdsn.org/seed_manual/SEEDManual_V2.4.pdf}).
 
 Each \code{Stream} object contains "accumulators" with counts of the number of times 
 each bit flag was set during the parsing of a miniSEED file.  Metrics are reported
@@ -69,7 +69,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

@@ -170,7 +170,7 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
   
   
   # Choose McNamara frequencies based on the chanel 'band code'(=sampling rate)
-  # See:  http://www.iris.edu/manuals/SEED_appA.htm
+  # See: http://www.fdsn.org/pdf/SEEDManual_V2.4_Appendix-A.pdf
   # NOTE:  This choice was recommended by Mary Templeton
   channel <- tr1@stats@channel
   if (stringr::str_detect(channel,"^L")) {
@@ -223,8 +223,8 @@ transferFunctionMetric <- function(st1, st2, evalresp1, evalresp2) {
     # NOTE:  by 2.0 when the time series being evaluated is Real rather than Complex.
     # NOTE:  Please see these two excellent sources, especially the 'psd' vignette:
     # NOTE:  
-    # NOTE:    http://www.stanford.edu/class/ee262/software/signal_tb.pdf
-    # NOTE:    http://cran.r-project.org/web/packages/psd/vignettes/normalization.pdf
+    # NOTE:    https://web.stanford.edu/class/ee262/software/signal_tb.pdf
+    # NOTE:    https://cran.r-project.org/web/packages/psd/vignettes/normalization.pdf
     df$spec1 <- 2 * df$spec1
     df$spec2 <- 2 * df$spec2
     

@@ -58,7 +58,7 @@ See the \code{seismic} package for documentation on \code{Stream} objects and th
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

@@ -27,14 +27,14 @@ sampleRateChannelMetric <- function(st, channel_pct=1, chan_rate=NULL) {
     if (!inherits(iris,"IrisClient")) {
        iris <- new("IrisClient") # defaults to fdsnws 
     }
-    if (is.null(chan_rate)) { # if metadata sample rate or normalized frequency not provided, go to IRIS web services
+    if (is.null(chan_rate)) { # if metadata sample rate or normalized frequency not provided, go to EarthScope web services
        av <- getChannel(iris,network,station,location,channel,st@traces[[1]]@stats@starttime, st@traces[[1]]@stats@endtime)
     }
   }
 
   # Calculate sample_rate_channel metric
 
-  if (is.null(chan_rate)) { # if metadata sample rate not provided, go to IRIS web services
+  if (is.null(chan_rate)) { # if metadata sample rate not provided, go to EarthScope web services
     chan_rate <- av$samplerate   
   }
   

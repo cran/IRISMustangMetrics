@@ -18,7 +18,7 @@
 ################################################################################
 # R classes for a Metric obj.
 #
-# This class is part of the MUSTANG project at IRIS DMC.
+# This class is part of the MUSTANG project at EarthScope.
 #
 # The Metric class stores generated metrics and allows their output
 # as XML.

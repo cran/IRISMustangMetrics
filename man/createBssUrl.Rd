@@ -16,17 +16,17 @@ createBssUrl(obj, network, station, location, channel,
 }
 
 \arguments{
-  \item{obj}{ an \code{IrisClient} object }
-  \item{network}{ a character string with the two letter seismic network code }
-  \item{station}{ a character string with the station code }
-  \item{location}{ a character string with the location code }
-  \item{channel}{ a character string with the three letter channel code }
-  \item{starttime}{ a POSIXct class specifying the starttime (GMT) }
-  \item{endtime}{ a POSIXct class specifying the endtime (GMT) }
-  \item{metricName}{ a character string containing one or more comma separated metric names }
+  \item{obj}{ \code{IrisClient} object}
+  \item{network}{character string with the two letter seismic network code}
+  \item{station}{character string with the station code}
+  \item{location}{character string with the location code}
+  \item{channel}{character string with the three letter channel code}
+  \item{starttime}{POSIXct class specifying the starttime (GMT)}
+  \item{endtime}{POSIXct class specifying the endtime (GMT)}  
+  \item{metricName}{character string containing one or more comma separated metric names}
   \item{\dots}{optional arguments
-    \code{constraint}{ a character string containing value constraints }
-    \code{url}{ optional url of the BSS measurements service }
+    \code{constraint} a character string containing value constraints 
+    \code{url} optional url of the BSS measurements service 
   }
 }
 
@@ -36,7 +36,7 @@ A blank location code should be specified as \code{location="--"}; Using \code{l
 
 The default MUSTANG measurement service when \code{url} is not specified is:
 
-\code{http://service.iris.edu/mustang/measurements/1/query?}
+\code{https://service.earthscope.org/mustang/measurements/1/query?}
 
 }
 
@@ -58,7 +58,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 %% max preformatted length ---------------------------------------------------
 \examples{
-# Open a connection to IRIS DMC webservices (including the BSS)
+# Open a connection to EarthScope webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2013-06-01", tz="GMT")

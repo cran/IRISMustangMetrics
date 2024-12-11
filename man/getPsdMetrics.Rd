@@ -29,7 +29,7 @@ getPsdMetrics(obj, network, station, location, channel, starttime, endtime, url)
 \details{
 The default BSS measurement service when \code{url} is not specified is:
 
-\code{http://service.iris.edu/mustang/noise-psd/1/query?}
+\code{https://service.earthscope.org/mustang/noise-psd/1/query?}
 
 Data returned from the BSS are converted into an \R dataframe.
 
@@ -60,7 +60,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices (including the BSS)
+# Open a connection to EarthScope webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2012-01-24", tz="GMT")

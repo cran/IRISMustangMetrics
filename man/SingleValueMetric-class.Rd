@@ -17,7 +17,7 @@
 \description{
 A container for metrics results and associated metadata.  This information is used to create XML that is
 then submitted to the MUSTANG Backend Storage System (BSS). This has been superceded by \code{GeneralValueMetric} 
-and is no longer in use.
+and is deprecated.
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form:
@@ -84,7 +84,7 @@ improves performance of the BSS which expects XML of the following form:
 The \code{quality_flag} is an optional value available for storing information related to the
 processing of a particular metric.  Its meaning will vary from metric to metric.
 
-For an IRIS/DMC specific example, the \code{station_completeness} metric obtains a list of available channels
+For an EarthScope specific example, the \code{station_completeness} metric obtains a list of available channels
 for a station from the availability web service and compares this list with the list of \code{percent_availability} metrics for this station stored in the MUSTANG BSS.  In the case of the \code{station_completeness} metric, the 
 \code{quality_flag} is set to the number of channels that should be available but for whom no \code{percent_availability} measure is obtained form the BSS.
 
@@ -97,7 +97,7 @@ The \code{attributeName} and \code{attributeValueString} slots can be used to st
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

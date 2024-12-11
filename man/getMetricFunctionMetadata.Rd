@@ -8,7 +8,7 @@
 \description{
 Returns a JSON formatted string with metric function metadata.
 This string is needed by the python-based ISPAQ command-line utility developed
-by IRIS DMC.
+by EarthScope.
 }
 
 \usage{

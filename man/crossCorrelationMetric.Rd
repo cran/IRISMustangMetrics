@@ -53,7 +53,7 @@ The metricList generated for this two-channel metric will have an additional \co
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the same signal, shifted by 3 seconds

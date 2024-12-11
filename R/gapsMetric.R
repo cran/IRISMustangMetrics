@@ -20,7 +20,7 @@
 
 
 ################################################################################
-# The IRIS DMC MUSTANG project keeps track of
+# The EarthScope MUSTANG project keeps track of
 #
 #   - num_gaps
 #   - max_gap

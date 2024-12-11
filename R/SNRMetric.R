@@ -51,7 +51,7 @@ SNRMetric <- function(st, algorithm="splitWindow", windowSecs=60) {
   if (algorithm == "splitWindow") {
     
     # NOTE:  In this case, the window is assumed to be centered about
-    # NOTE:  an event, perhaps determined withthe IRIS DMC "event" webservice
+    # NOTE:  an event, perhaps determined withthe EarthScope "event" webservice
     # NOTE:  The triggerOnset is just the midpoint of the trace.
 
     to <- starttime + as.numeric(difftime(endtime, starttime, units="sec")) / 2

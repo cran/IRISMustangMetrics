@@ -50,7 +50,7 @@ Gillian Sharer \email{gillian.sharer@earthscope.org}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 starttime <- as.POSIXct("2019-08-01",tz="GMT")

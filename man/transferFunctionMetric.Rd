@@ -11,7 +11,7 @@ working properly, the transfer function amplitude and phase will match similar v
 from the instrument responses.
 
 This function calculates the transfer function from data in the incoming streams.
-Response information is then obtained from the \href{http://service.iris.edu/irisws/evalresp/1/}{evalresp web service}.
+Response information is then obtained from the \href{https://service.earthscope.org/irisws/evalresp/1/}{evalresp web service}.
 }
 
 \usage{

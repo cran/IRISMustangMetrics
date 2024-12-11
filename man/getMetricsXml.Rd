@@ -31,7 +31,7 @@ getMetricsXml(obj, network, station, location, channel,
 \details{
 The default BSS measurement service when \code{url} is not specified is:
 
-\code{http://service.iris.edu/mustang/measurements/1/query?}
+\code{https://service.earthscope.org/mustang/measurements/1/query?}
 
 This method returns raw XML which is not that useful by itself.  Users should instead use the
 \link{getBssMetricList} method which calls this function and returns a list \code{_Metric} objects.
@@ -58,7 +58,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \examples{
-# Open a connection to IRIS DMC webservices (including the BSS)
+# Open a connection to EarthScope webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2012-01-24", tz="GMT")
@@ -67,7 +67,7 @@ endtime <- as.POSIXct("2012-01-25", tz="GMT")
 # Get the measurement XML
 xml <- tryCatch(getMetricsXml(iris,"AK","PIN","","BHZ",
                           starttime,endtime,metricName="sample_mean",
-                          url="http://service.iris.edu/mustang/measurements/1/query?"),
+                          url="https://service.earthscope.org/mustang/measurements/1/query?"),
                 error= function(e) {message(e)}) 
 }
 

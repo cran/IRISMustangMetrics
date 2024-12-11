@@ -56,7 +56,7 @@ name is \code{max_stalta}.
 
 \href{https://www.crewes.org/Documents/ResearchReports/2014/CRR201476.pdf}{Automatic time-picking of first arrivals on large seismic datasets} (Wong 2014)
 
-\href{http://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf}{Automatic first-breaks picking: New strategies and algorithms} (Sabbione and Velis 2010)
+\href{https://web.archive.org/web/20170809102808/https://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf}{Automatic first-breaks picking: New strategies and algorithms} (Sabbione and Velis 2010)
 )
 
 }
@@ -78,7 +78,7 @@ By comparison, finding the maximum value of this vector of STA/LTA values is ver
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get the waveform

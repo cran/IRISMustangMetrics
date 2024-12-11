@@ -38,7 +38,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # NOTE:  The following trace has 1.728 million points.

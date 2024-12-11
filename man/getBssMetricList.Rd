@@ -55,7 +55,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices (including the BSS)
+# Open a connection to EarthScope webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2014-01-24", tz="GMT")

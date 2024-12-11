@@ -4,11 +4,12 @@
 \alias{IRISMustangMetrics-package}
 \alias{IRISMustangMetrics}
 
-\title{Utilities for calculating seismic metrics from EarthScope (formerly IRIS DMC) data}
+\title{Utilities for calculating seismic quality assurance metrics }
 
 \description{
 This package provides S4 classes and functions for calculating metrics from seismological 
-data available from EarthScope (\url{http://ds.iris.edu/ds/nodes/dmc/}).
+data available from EarthScope (\url{https:/www.earthscope.org}) (formerly IRIS) or data centers
+offering FDSN web services.
 This package is part of the MUSTANG project.
 }
 
@@ -16,6 +17,10 @@ This package is part of the MUSTANG project.
   The \pkg{IRISMustangMetrics} package depends upon the \pkg{IRISSeismic} package which  defines
   new S4 classes and methods for manipulating seismic data.  Please see the "seismic-intro" 
   vignette for introductory examples on using \pkg{IRISSeismic}.
+
+  In 2023, IRIS (Incorporated Research Institutions for Seismology) and UNAVCO merged 
+  to form EarthScope Consortium. IRIS (now EarthScope) webservices are unchanged but
+  can now be accessed at \url{https://service.earthscope.org} as well as \url{https://service.iris.edu}. 
 }
 
 \author{
@@ -23,15 +28,19 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 }
 
 \references{
-IRIS DMC web services: \url{http://service.iris.edu/}
+EarthScope web services: \url{https://service.earthscope.org}
 }
 
 \section{History}{
 
+  version 2.4.7
+  \itemize{
+     \item(updated references from IRIS to EarthScope) 
+  }    
   version 2.4.6
   \itemize{
      \item(updated email addresses)
-     \item(ISPQAUtils, add psd_corrected metric name to allow the ISPAQ tool to return uncorrected psds)
+     \item(ISPAQUtils, add psd_corrected metric name to allow the ISPAQ tool to return uncorrected psds)
   }
 
   version 2.4.5
@@ -277,7 +286,7 @@ IRIS DMC web services: \url{http://service.iris.edu/}
 %% \seealso{ }
 
 \examples{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient", debug=TRUE)
 
 # Get the seismic data

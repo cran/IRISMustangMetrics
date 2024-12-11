@@ -65,7 +65,7 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 
 \examples{
  \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get an hour long waveform centered on a big quake

@@ -34,7 +34,7 @@ frequency and multiplied by two to give the empirical response-derived sample ra
 this sample rate with the miniSEED sample rate to see whether both rates agree within \code{resp_pct} percent.
 The default percentage of 15% reflects that while most FIR filters roll off at around 85% of the Nyquist frequency, 
 there is significant variations across instruments. If norm_freq or evalresp values are not provided, the code will
-retrieve values from IRIS web services.
+retrieve values from EarthScope web services.
 
 The sampleRateMetric function calculates and returns the following metrics:
 
@@ -65,7 +65,7 @@ Mary Templeton \email{mary.templeton@earthscope.org}
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 starttime <- as.POSIXct("2019-08-01",tz="GMT")

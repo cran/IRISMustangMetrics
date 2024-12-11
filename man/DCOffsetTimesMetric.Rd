@@ -58,7 +58,7 @@ a large seismic signal in an otherwise lo-noise signal.
 
 \examples{
 \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get a signal with a DC offset problem

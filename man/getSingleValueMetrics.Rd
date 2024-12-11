@@ -37,12 +37,12 @@ A blank location code should be specified as \code{location="--"}; Using \code{l
 
 The default MUSTANG measurement service when \code{url} is not specified is:
 
-\code{http://service.iris.edu/mustang/measurements/1/query?}
+\code{https://service.earthscope.org/mustang/measurements/1/query?}
 
 Data returned from MUSTANG are converted into an \R dataframe.
 
 The optional \code{constraint} parameter is used to add constraints to the query as defined
-in the \href{http://service.iris.edu/mustang/measurements/1}{MUSTANG measurements web service documentation}.
+in the \href{https://service.earthscope.org/mustang/measurements/1}{MUSTANG measurements web service documentation}.
 Any string passed in with the 
 \code{constraint} parameter will be appended to the request url following an ampersand.
 
@@ -97,7 +97,7 @@ in the dataframe.
 %% max preformatted length ---------------------------------------------------
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices (including the BSS)
+# Open a connection to EarthScope webservices (including the BSS)
 iris <- new("IrisClient", debug=TRUE)
 
 starttime <- as.POSIXct("2013-06-01", tz="GMT")

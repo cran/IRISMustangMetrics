@@ -55,7 +55,7 @@ The metricList generated for this two-channel metric will have a SNCL code of th
 
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 # Get seismic traces

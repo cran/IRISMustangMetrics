@@ -26,11 +26,8 @@
 #
 # The 2004 McNamara paper "Ambient Noise Levels in the Continental United States"
 # is available here:
-# http://geohazards.cr.usgs.gov/staffweb/mcnamara/PDFweb/Noise_PDFs.html
+# https://geohazards.cr.usgs.gov/staffweb/mcnamara/PDFweb/Noise_PDFs.html
 #
-#
-# PSD algorithm from Mary Templeton on 2013-06-05
-#   https://seiscode.iris.washington.edu/issues/46
 #
 # Target channels would include 
 # {LMBSEH}{HNL}?
@@ -236,7 +233,7 @@ PSDMetric <- function(st,
 	      svMetricList <- append(svMetricList,list(m5))
         }
 
-        # create a corrected PSD data frame similar to that returned by http://services.iris.edu/mustang/noise-psd/1/
+        # create a corrected PSD data frame similar to that returned by https://services.earthscope.org/mustang/noise-psd/1/
         startlist <- do.call("c",lapply(psdList,`[[`,"starttime"))
         endlist <- do.call("c",lapply(psdList,`[[`,"endtime"))
 

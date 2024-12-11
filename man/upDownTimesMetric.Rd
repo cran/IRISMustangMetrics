@@ -39,16 +39,9 @@ Jonathan Callahan \email{jonathan@mazamascience.com}
 See the \code{seismic} package for documentation on \code{Stream} objects and the \code{getDataselect} method.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{getUpDownTimes}}
-}
-
 \examples{
   \dontrun{
-# Open a connection to IRIS DMC webservices
+# Open a connection to EarthScope webservices
 iris <- new("IrisClient")
 
 starttime <- as.POSIXct("2012-01-24", tz="GMT")

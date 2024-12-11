@@ -1,6 +1,6 @@
 ##
 ##    Utility functions for communicating with the Backend Storage Service (BSS)
-##    of IRIS DMC project MUSTANG.
+##    of EarthScope project MUSTANG.
 ##
 ##    Copyright (C) 2012  Mazama Science, Inc.
 ##    by Jonathan Callahan, jonathan@mazamascience.com
@@ -161,7 +161,7 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
       
       # An example returning a single MultipleTimeValueMetric
       #
-      # http://service.iris.edu//mustang/measurements/1/query?metric=up_down_times&target=IU.XMAS.10.BHE.B&startafter=2012-07-00T00:00:00@endbefore=2012-07-00T00:00:00
+      # https://service.earthscope.org//mustang/measurements/1/query?metric=up_down_times&target=IU.XMAS.10.BHE.B&startafter=2012-07-00T00:00:00@endbefore=2012-07-00T00:00:00
       # <measurements>
       #  <up_down_times net="IU" sta="XMAS" loc="10" chan="BHE" qual="M" target="IU.XMAS.10.BHE.B" start="2012-07-01T00:00:00.000" end="2012-07-02T00:00:00.000">
       #   <t value="2012-07-01T00:00:00.000"/>
@@ -208,7 +208,7 @@ getBssMetricList.IrisClient <- function(obj, network, station, location, channel
       
       # An example returning multiple SingleValueMetrics
       #
-      # http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=00&chan=BH?&timewindow=2012-07-12T00:00:00,2012-07-13T00:00:00&metric=percent_availability
+      # https://service.earthscope.org/mustang/measurements/1/query?net=IU&sta=ANMO&loc=00&chan=BH?&timewindow=2012-07-12T00:00:00,2012-07-13T00:00:00&metric=percent_availability
       # <measurements>
       #  <percent_availability value="100.00" net="IU" sta="ANMO" loc="00" chan="BH1" qual="M" target="IU.ANMO.00.BH1.B" start="2012-07-12T00:00:00.000" end="2012-07-13T00:00:00.000"/>
       #  <percent_availability value="100.00" net="IU" sta="ANMO" loc="00" chan="BH2" qual="M" target="IU.ANMO.00.BH2.B" start="2012-07-12T00:00:00.000" end="2012-07-13T00:00:00.000"/>
@@ -256,13 +256,13 @@ setMethod("getBssMetricList", signature(obj="IrisClient",
           function(obj, network, station, location, channel, starttime, endtime, metricName, url) 
             getBssMetricList.IrisClient(obj, network, station, location, channel,
                                         starttime, endtime, metricName,
-                                        url="http://service.iris.edu/mustang/measurements/1/query?"))
+                                        url="https://service.earthscope.org/mustang/measurements/1/query?"))
 
 
 ################################################################################
 # getMetricsXml method returns measurementsXml from the BSS metrics webservice:
 #
-# http://service.iris.edu/mustang/measurements
+# https://service.earthscope.org/mustang/measurements
 #
 ################################################################################
 
@@ -341,82 +341,8 @@ setMethod("getMetricsXml", signature(obj="IrisClient",
           function(obj, network, station, location, channel, starttime, endtime, metricName, url) 
             getMetricsXml.IrisClient(obj, network, station, location, channel,
                                      starttime, endtime, metricName,
-                                     url="http://service.iris.edu/mustang/measurements/1/query?"))
+                                     url="https://service.earthscope.org/mustang/measurements/1/query?"))
 
-
-
-################################################################################
-# getLatencyValuesXml method returns XML from the LatencyValues servlet:
-#
-# http://www.iris.edu/mustang/latency/LatencyValues?net=IU&stn=ANMO&loc=*&chn=BHZ
-#
-################################################################################
-
-if (!isGeneric("getLatencyValuesXml")) {
-  setGeneric("getLatencyValuesXml", function(obj, network, station, location, channel, url) {
-    standardGeneric("getLatencyValuesXml")
-  })
-}
-
-getLatencyValuesXml.IrisClient <- function(obj, network, station, location, channel, url) {
-  
-  # Assemble URL
-  if (network != "") {
-    url <- paste(url,"net=",network,sep="")    
-  }
-  if (station != "") {
-    url <- paste(url,"&sta=",station,sep="")
-  }
-  if (location != "") {
-    # NOTE:  Unlike other web services, the measurements service expects "" rather than "--" for the BLANK location designator.
-    location <- stringr::str_replace(location,"--","")
-    url <- paste(url,"&loc=",location,sep="")
-  }
-  if (channel != "") {
-    url <- paste(url,"&cha=",channel,sep="")
-  }
-  
-  if (obj@debug) {
-    write(paste("URL =",url), stdout())
-  }
-  
-  # Get data from LatencyValues servlet
-  # NOTE:  RCurl::getURLContent returns a binary objected based on the "resulting HTTP  header's Content-Type field."
-  # NOTE:  Use RCurl::getURL to return data as character.
-  result <- try( latencyValuesXml <- RCurl::getURL(url, useragent=obj@useragent),
-                 silent=TRUE)
-  
-  # Handle error response
-  if (inherits(result,"try-error")) {  
-    err_msg <- geterrmessage()
-    if (stringr::str_detect(err_msg,regex("Not Found",ignore_case=TRUE))) {
-      stop(paste("getLatencyValuesXml.IrisClient: URL Not Found:",url))
-    } else if (stringr::str_detect(err_msg,regex("couldn't connect to host",ignore_case=TRUE))) {
-      stop(paste("getLatencyValuesXml.IrisClient: Couldn't connect to host"),url)
-    } else {
-      stop(paste("getLatencyValuesXml.IrisClient:",err_msg),url)
-    } 
-    
-  }
-  
-  # No errors so proceed
-  
-  return(latencyValuesXml)
-}
-
-# All arguments specified
-setMethod("getLatencyValuesXml", signature(obj="IrisClient", 
-                                           network="character", location="character", station="character", 
-                                           channel="character", url="character"), 
-          function(obj, network, station, location, channel, url) 
-            getLatencyValuesXml.IrisClient(obj, network, station, location, channel, url))
-# url="missing"
-setMethod("getLatencyValuesXml", signature(obj="IrisClient", 
-                                           network="character", location="character", station="character", 
-                                           channel="character", url="missing"), 
-          function(obj, network, station, location, channel, url) 
-            getLatencyValuesXml.IrisClient(obj, network, station, location, channel,
-                                           url="http://www.iris.edu/mustang/latency/LatencyValues?"))
 
 
 ################################################################################
@@ -429,7 +355,7 @@ setMethod("getLatencyValuesXml", signature(obj="IrisClient",
 #
 # Example of getting single valued measurements output from the ''measurements' service:
 #
-# http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
+# https://service.earthscope.org/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
 #       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
 
 if (!isGeneric("createBssUrl")) {
@@ -442,7 +368,7 @@ createBssUrl.IrisClient <- function(obj, network, station, location, channel,
                                     starttime, endtime, metricName, constraint="", url=NULL) {
 
   if (is.null(url)){
-     url <- "http://service.iris.edu/mustang/measurements/1/query?"
+     url <- "https://service.earthscope.org/mustang/measurements/1/query?"
   }
   
   # Assemble URL
@@ -513,7 +439,7 @@ setMethod("createBssUrl", signature(obj="IrisClient",
 # Single value metrics have output that is limited to "value","target","start","end","lddate". Metrics
 # that have other row names returned will not work correctly with this function.
 #
-# http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
+# https://service.earthscope.org/mustang/measurements/1/query?net=IU&sta=ANMO&loc=10&cha=BHZ&timewindow=2013-06-01T00:00:00,
 #       2013-06-02T00:00:00%20&format=text&metric=sample_mean,sample_min
 #
 # "Sample Mean Metric"
@@ -619,7 +545,7 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   # NOTE:  The metrics will not necessarily be returned in the order requested.
   # TODO:  Find alternate solution to hardcoded metric names.
   # Metric names returned with format=text do not match the requested metric names
-  # NOTE:  Copied names from http://service.iris.edu/mustang/measurements/1
+  # NOTE:  Copied names from https://service.earthscope.org/mustang/measurements/1
   # NOTE:  and did 1 minute of vim munging to generate this list.
   convertName <- list("Amplifier Saturation Metric"="amplifier_saturation",
                       "Calibration Signal Metric"="calibration_signal",
@@ -763,7 +689,7 @@ getSingleValueMetrics.IrisClient <- function(obj, network, station, location, ch
   }
   
   # Apply function to our list and bind the rows together to make one big dataframe
-  # NOTE:  http://www.r-bloggers.com/the-rbinding-race-for-vs-do-call-vs-rbind-fill/
+  # NOTE:  https://www.r-bloggers.com/the-rbinding-race-for-vs-do-call-vs-rbind-fill/
   TidyDF <- do.call("rbind", lapply(dataframeList, addMetricName))
   
   # Move last column to first 
@@ -792,7 +718,7 @@ setMethod("getSingleValueMetrics", signature(obj="IrisClient",
           function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
             getSingleValueMetrics.IrisClient(obj, network, station, location, channel,
                                              starttime, endtime, metricName, constraint,
-                                             "http://service.iris.edu/mustang/measurements/1/query?"))
+                                             "https://service.earthscope.org/mustang/measurements/1/query?"))
 
 # constraint="missing"
 setMethod("getSingleValueMetrics", signature(obj="IrisClient", 
@@ -812,7 +738,7 @@ setMethod("getSingleValueMetrics", signature(obj="IrisClient",
           function(obj, network, station, location, channel, starttime, endtime, metricName, constraint, url) 
             getSingleValueMetrics.IrisClient(obj, network, station, location, channel,
                                              starttime, endtime, metricName, "",
-                                             "http://service.iris.edu/mustang/measurements/1/query?"))
+                                             "https://service.earthscope.org/mustang/measurements/1/query?"))
 
 # getGeneralValueMetrics ---------------------------------------------------
 #
@@ -820,7 +746,7 @@ setMethod("getSingleValueMetrics", signature(obj="IrisClient",
 #
 # Example of getting general valued measurements output from the ''measurements' service:
 #
-# http://service.iris.edu/mustang/measurements/1/query?net=IU&sta=ANMO&location=00&
+# https://service.earthscope.org/mustang/measurements/1/query?net=IU&sta=ANMO&location=00&
 #       channel=BH[12Z]&timewindow=2016-08-29T00:00:00,2016-08-30T00:00:00&
 #       format=text&metric=sample_mean,orientation_check
 #
@@ -1115,7 +1041,7 @@ getMustangMetrics <- getGeneralValueMetrics
 #
 # Example of getting PSD output from the 'measurements' service
 #
-# http://service.iris.edu/mustang/noise-psd/1/query?net=IU&sta=ANMO&cha=BHZ&loc=00&quality=M&starttime=2013-05-01T00:00:00&endtime=2013-05-01T01:00:00&format=xml
+# https://service.earthscope.org/mustang/noise-psd/1/query?net=IU&sta=ANMO&cha=BHZ&loc=00&quality=M&starttime=2013-05-01T00:00:00&endtime=2013-05-01T01:00:00&format=xml
 #
 #<PsdRoot>
 #<Created>2016-09-23T20:50:36.661Z</Created>
@@ -1203,6 +1129,6 @@ setMethod("getPsdMetrics", signature(obj="IrisClient",
                                      url="missing"), 
           function(obj, network, station, location, channel, starttime, endtime, url) 
             getPsdMetrics.IrisClient(obj, network, station, location, channel, starttime, endtime,
-                                     url="http://service.iris.edu/mustang/noise-psd/1/query?"))
+                                     url="https://service.earthscope.org/mustang/noise-psd/1/query?"))
 
 
